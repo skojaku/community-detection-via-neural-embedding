@@ -1,63 +1,117 @@
-# Project template
-
-A simple template for research project repos. Also check out [data science and
-reproducible science cookie
-cutters](https://github.com/audreyr/cookiecutter#data-science).
-
-## Installation
-
-Run the following
-
-    ./install.sh YOUR_PROJECT_REPO_FOLDER
-
-This script creates the following folders and files. 
-
-1. `libs` for a software library for the project.
-1. `data` for datasets and scripts for downloading datasets.
-1. `exps` for timestamped experiments.
-1. `paper` for manuscripts.
-1. `workflow` for workflow scripts.
-1. `.gitignore` that lists temporary and binary files to ignore (LaTeX, Python, Jupyter, data files, etc. )
-
-## Set up
-
-### Anaconda
-
-First create a virtual environment for the project.
-
-    conda create -n project_env_name python=3.7
-    conda activate project_env_name
-
-Install `ipykernel` for Jupyter and `snakemake` for workflow management. 
-
-    conda install -y -c bioconda -c conda-forge snakemake ipykernel numpy pandas scipy matplotlib seaborn tqdm austin
-
-Create a kernel for the virtual environment that you can use in Jupyter lab/notebook.
-
-    python -m ipykernel install --user --name project_env_kernel_name
+# Network clustering via neural embedding 
 
 
-### Git pre-commit
+# Paper 
+
+```
+```
+
+How to cite:
+```
+@article{neuralemb,
+}
+```
+
+# Repducing our results
+
+## Setup
+
+Set up the virtual environment and install the packages.
 
 ```bash
-conda install -y -c conda-forge pre-commit
-pre-commit install
+conda create -n neuralemb python=3.9
+conda activate neuralemb
+conda install -c conda-forge mamba -y
+mamba install pytorch torchvision torchaudio cudatoolkit=11.6 -c pytorch -c conda-forge -y
+mamba install -y -c bioconda -c conda-forge snakemake -y
+mamba install -c conda-forge graph-tool scikit-learn numpy numba scipy pandas networkx seaborn matplotlib gensim ipykernel tqdm black faiss=1.7.3 -y
 ```
 
+Install the in-house packages 
 
-### Snakemake setting 
+```bash
+cd libs/BeliefPropagation && pip install -e . 
+cd libs/embcom && pip install -e . 
+```
+
+Install the Python wrapper for the LFR network generator:
 
 ```bash 
-mkdir -p ~/.config/snakemake/default 
-```
-and create `~/.config/snakemake/default/config.yaml`:
-```yaml
-# non-slurm profile defaults
-keep-going: True
-rerun-triggers: mtime
+wget --no-check-certificate 'https://docs.google.com/uc?export=download&id=1rUMowBj13WDDsZ_s6td-Fxw1qsLNIn6Z' -O - --no-check-certificate 'https://docs.google.com/uc?export=download&id=1rUMowBj13WDDsZ_s6td-Fxw1qsLNIn6Z' -qO- | tar -xz
+mv binary_networks libs/lfr_benchmark/lfr_benchmark/lfr-generator
+cd libs/lfr_benchmark/lfr_benchmark/lfr-generator && make
 ```
 
-and add the following to .zshrc or .bashrc file
-```bash 
-export SNAKEMAKE_PROFILE=default
+Then, create file `config.yaml` with the following content:
+``yaml
+data_dir: "data/"
 ```
+and place the yaml file under `workflow` folder. Note that the script will generate over 1T byte of data under this data folder. So make sure you have sufficient space.
+
+
+## Run simulation  
+
+Run the `Snakemake`:
+
+```bash 
+snakemake --cores 24 all 
+```
+
+
+# About the code
+
+## Graph embedding
+
+We provide a ready-to-use package for graph embedding methods, including node2vec, DeepWalk, LINE, and some conventional graph embedding.
+The package can be install by 
+
+```bash 
+cd libs/embcom && pip install -e . 
+```
+
+### Usage
+
+```python 
+import embcom
+import networkx as nx 
+
+# Load the network for demonstration
+G = nx.karate_club_graph()
+A = nx.adjacency_matrix(G)
+
+# Loading the node2vec model
+# `window_length`: Size of window, T
+# `num_walks`: Number of walks
+model = embcom.embeddings.Node2Vec(window_length=80, num_walks=20)
+
+# Train
+# `net`: scipy sparse matrix
+model.fit(net) 
+
+# Generate an embedding
+# `dim`: Integer 
+model.transform(dim=dim) 
+```
+
+Other embedding models:
+````python
+# DeepWalk 
+model = embcom.embeddings.DeepWalk(window_length=window_length, num_walks=num_walks)
+
+# Laplacian EigenMap
+model = embcom.embeddings.LaplacianEigenMap()
+
+# Laplacian EigenMap
+model = embcom.embeddings.LaplacianEigenMap()
+
+# Modularity spectral Embedding
+model = embcom.embeddings.ModularitySpectralEmbedding()
+
+# Non-backtracking spectral embedding 
+model = embcom.embeddings.NonBacktrackingSpectralEmbedding()
+```
+
+
+## Belief propagation algorithm 
+
+We develop a Python wrapper for the belief propagation method. See (this package)[https://github.com/skojaku/BeliefPropagation] for the details.
