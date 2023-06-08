@@ -1,23 +1,20 @@
-# Network clustering via neural embedding 
+# Network clustering via neural embedding
 
-
-# Paper 
-
+## Paper
 ```
 ```
 
-How to cite:
-```
+To cite our work, please use the following BibTeX entry:
+```bibtex
 @article{neuralemb,
 }
 ```
 
-# Repducing our results
+## Reproducing Our Results
 
-## Setup
+### Setup
 
-Set up the virtual environment and install the packages.
-
+1. Set up the virtual environment and install the required packages:
 ```bash
 conda create -n neuralemb python=3.9
 conda activate neuralemb
@@ -27,79 +24,79 @@ mamba install -y -c bioconda -c conda-forge snakemake -y
 mamba install -c conda-forge graph-tool scikit-learn numpy numba scipy pandas networkx seaborn matplotlib gensim ipykernel tqdm black faiss=1.7.3 -y
 ```
 
-Install the in-house packages 
-
+2. Install the in-house packages:
 ```bash
-cd libs/BeliefPropagation && pip install -e . 
-cd libs/embcom && pip install -e . 
+cd libs/BeliefPropagation && pip install -e .
+cd libs/embcom && pip install -e .
 ```
 
-Install the Python wrapper for the LFR network generator:
-
-```bash 
+3. Install the Python wrapper for the LFR network generator:
+```bash
 wget --no-check-certificate 'https://docs.google.com/uc?export=download&id=1rUMowBj13WDDsZ_s6td-Fxw1qsLNIn6Z' -O - --no-check-certificate 'https://docs.google.com/uc?export=download&id=1rUMowBj13WDDsZ_s6td-Fxw1qsLNIn6Z' -qO- | tar -xz
 mv binary_networks libs/lfr_benchmark/lfr_benchmark/lfr-generator
 cd libs/lfr_benchmark/lfr_benchmark/lfr-generator && make
 ```
 
-Then, create file `config.yaml` with the following content:
-``yaml
+4. Create a file `config.yaml` with the following content and place it under the `workflow` folder:
+```yaml
 data_dir: "data/"
 ```
-and place the yaml file under `workflow` folder. Note that the script will generate over 1T byte of data under this data folder. So make sure you have sufficient space.
 
+Note that the script will generate over 1T byte of data under this `data/` folder. Make sure you have sufficient disk space.
 
-## Run simulation  
+### Run Simulation
 
-Run the `Snakemake`:
+Run the following command to execute the `Snakemake` workflow:
+```bash
+snakemake --cores 24 all
+```
+This will generate all files needed to produce the figures. Then, run
+```bash
+snakemake --cores 24 figs
+```
+You can change the number of cores to use, instead of 24.
 
-```bash 
-snakemake --cores 24 all 
+## About the Code
+
+### Graph Embedding
+
+We provide a package for graph embedding methods, including node2vec, DeepWalk, LINE, and some conventional graph embedding. The package can be installed using the following command:
+```bash
+cd libs/embcom && pip install -e .
 ```
 
-
-# About the code
-
-## Graph embedding
-
-We provide a ready-to-use package for graph embedding methods, including node2vec, DeepWalk, LINE, and some conventional graph embedding.
-The package can be install by 
-
-```bash 
-cd libs/embcom && pip install -e . 
-```
-
-### Usage
-
-```python 
+#### Usage
+```python
 import embcom
-import networkx as nx 
+import networkx as nx
 
-# Load the network for demonstration
+Load the network for demonstration
 G = nx.karate_club_graph()
 A = nx.adjacency_matrix(G)
 
 # Loading the node2vec model
-# `window_length`: Size of window, T
-# `num_walks`: Number of walks
+# window_length
+# : Size of window, T
+# num_walks
+# : Number of walks
 model = embcom.embeddings.Node2Vec(window_length=80, num_walks=20)
 
 # Train
-# `net`: scipy sparse matrix
-model.fit(net) 
+# net
+# : scipy sparse matrix
+model.fit(net)
 
 # Generate an embedding
-# `dim`: Integer 
-model.transform(dim=dim) 
+# dim
+# : Integer
+emb = model.transform(dim=dim)
 ```
-
 Other embedding models:
-````python
-# DeepWalk 
-model = embcom.embeddings.DeepWalk(window_length=window_length, num_walks=num_walks)
 
-# Laplacian EigenMap
-model = embcom.embeddings.LaplacianEigenMap()
+```python
+
+# DeepWalk
+model = embcom.embeddings.DeepWalk(window_length=window_length, num_walks=num_walks)
 
 # Laplacian EigenMap
 model = embcom.embeddings.LaplacianEigenMap()
@@ -107,11 +104,11 @@ model = embcom.embeddings.LaplacianEigenMap()
 # Modularity spectral Embedding
 model = embcom.embeddings.ModularitySpectralEmbedding()
 
-# Non-backtracking spectral embedding 
+# Non-backtracking spectral embedding
 model = embcom.embeddings.NonBacktrackingSpectralEmbedding()
 ```
 
+### Belief Propagation Algorithm
 
-## Belief propagation algorithm 
+We have developed a Python wrapper for the belief propagation method. See [this package](https://github.com/skojaku/BeliefPropagation) for details.
 
-We develop a Python wrapper for the belief propagation method. See (this package)[https://github.com/skojaku/BeliefPropagation] for the details.
