@@ -4,7 +4,10 @@ import itertools
 import pandas as pd
 from snakemake.utils import Paramspace
 
+
 configfile: "workflow/config.yaml"
+
+
 include: "./utils.smk"
 
 
@@ -34,7 +37,7 @@ emb_params = {
         "nonbacktracking",
     ],
     "window_length": [10],
-    "dim": [16, 64,128],
+    "dim": [16, 64, 128],
 }
 
 # Community detection
@@ -52,12 +55,12 @@ clustering_params = {
 # Data specific
 # ============
 
-FIG_PERFORMANCE_VS_MIXING_ALL = j(
-    FIG_DIR,
-    "all_perf_vs_mixing.pdf",
-)
+FIG_PERFORMANCE_VS_MIXING_ALL = j(FIG_DIR, "all_perf_vs_mixing.pdf",)
+
 
 include: "./Snakefile_multipartition_files.smk"
+
+
 include: "./Snakefile_lfr_files.smk"
 
 
@@ -70,14 +73,26 @@ DATA_LIST = ["multi_partition_model", "lfr"]
 
 rule all:
     input:
-        expand(EVAL_EMB_FILE, data="multi_partition_model", **net_params, **emb_params, **clustering_params),
+        expand(
+            EVAL_EMB_FILE,
+            data="multi_partition_model",
+            **net_params,
+            **emb_params,
+            **clustering_params
+        ),
         expand(EMB_FILE, data="multi_partition_model", **net_params, **emb_params),
-        expand(LFR_EVAL_EMB_FILE, data="lfr", **lfr_net_params, **emb_params, **clustering_params),
+        expand(
+            LFR_EVAL_EMB_FILE,
+            data="lfr",
+            **lfr_net_params,
+            **emb_params,
+            **clustering_params
+        ),
         expand(LFR_EMB_FILE, data="lfr", **lfr_net_params, **emb_params),
 
 
 rule figs:
     input:
-        expand(FIG_PERFORMANCE_VS_MIXING, **fig_params_perf_vs_mixing),# expand(FIG_SPECTRAL_DENSITY_FILE, **bipartition_params)
+        expand(FIG_PERFORMANCE_VS_MIXING, **fig_params_perf_vs_mixing), # expand(FIG_SPECTRAL_DENSITY_FILE, **bipartition_params)
         expand(FIG_LFR_PERFORMANCE_VS_MIXING, **fig_lfr_params_perf_vs_mixing),
-        expand(FIG_PERFORMANCE_VS_MIXING_ALL, data = DATA_LIST),
+        expand(FIG_PERFORMANCE_VS_MIXING_ALL, data=DATA_LIST),

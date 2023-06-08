@@ -62,7 +62,9 @@ COM_DETECT_EMB_FILE = j(
 # ==========
 # Evaluation
 # ==========
-EVAL_EMB_FILE = j(EVA_DIR, f"score_clus_{com_detect_emb_paramspace.wildcard_pattern}.npz")
+EVAL_EMB_FILE = j(
+    EVA_DIR, f"score_clus_{com_detect_emb_paramspace.wildcard_pattern}.npz"
+)
 EVAL_FILE = j(EVA_DIR, f"score_{com_detect_paramspace.wildcard_pattern}.npz")
 
 #
@@ -70,6 +72,7 @@ EVAL_FILE = j(EVA_DIR, f"score_{com_detect_paramspace.wildcard_pattern}.npz")
 #
 LOSS_LANDSCAPE_MODEL_LIST = ["modularity", "laplacian"]
 FIG_LOSS_LANDSCAPE = j("figs", "loss_landscape", "loss_landscape_model~{model}.pdf")
+
 
 # ======
 # RULES
@@ -87,7 +90,7 @@ rule generate_net_multi_partition_model:
         data="multi_partition_model",
     resources:
         mem="12G",
-        time="04:00:00"
+        time="04:00:00",
     script:
         "workflow/net_generator/generate-net-by-multi-partition-model.py"
 
@@ -122,7 +125,7 @@ rule voronoi_clustering_multi_partition_model:
         clustering="voronoi",
     resources:
         mem="12G",
-        time="01:00:00"
+        time="01:00:00",
     script:
         "workflow/community-detection/voronoi-clustering.py"
 
@@ -139,7 +142,7 @@ rule kmeans_clustering_multi_partition_model:
         clustering="kmeans",
     resources:
         mem="12G",
-        time="01:00:00"
+        time="01:00:00",
     script:
         "workflow/community-detection/kmeans-clustering.py"
 
@@ -167,7 +170,7 @@ rule evaluate_communities:
         output_file=EVAL_FILE,
     resources:
         mem="12G",
-        time="00:10:00"
+        time="00:10:00",
     script:
         "workflow/evaluation/eval-com-detect-score.py"
 
@@ -180,7 +183,7 @@ rule evaluate_communities_for_embedding:
         output_file=EVAL_EMB_FILE,
     resources:
         mem="12G",
-        time="00:20:00"
+        time="00:20:00",
     script:
         "workflow/evaluation/eval-com-detect-score.py"
 
@@ -188,10 +191,7 @@ rule evaluate_communities_for_embedding:
 rule concatenate_results_multipartition:
     input:
         input_files=expand(
-            EVAL_FILE,
-            data="multi_partition_model",
-            **net_params,
-            **com_detect_params,
+            EVAL_FILE, data="multi_partition_model", **net_params, **com_detect_params,
         ) + expand(
             EVAL_EMB_FILE,
             data="multi_partition_model",
@@ -208,7 +208,7 @@ rule concatenate_results_multipartition:
         data="multi_partition_model",
     resources:
         mem="4G",
-        time="00:50:00"
+        time="00:50:00",
     script:
         "workflow/evaluation/concatenate_results.py"
 
@@ -223,15 +223,28 @@ rule plot_performance_vs_mixing:
         output_file=FIG_PERFORMANCE_VS_MIXING,
     params:
         parameters=fig_perf_vs_mixing_paramspace.instance,
-        dimThreshold= False,
-        normalize= False,
-        model_names = ["node2vec", "deepwalk", "line", "modspec", "leigenmap", "nonbacktracking", "bp", "infomap", "flatsbm" ],
-        with_legend = lambda wildcards: "True" if str(wildcards.cave)=="5" else "False"
+        dimThreshold=False,
+        normalize=False,
+        model_names=[
+            "node2vec",
+            "deepwalk",
+            "line",
+            "modspec",
+            "leigenmap",
+            "nonbacktracking",
+            "bp",
+            "infomap",
+            "flatsbm",
+        ],
+        with_legend=(
+            lambda wildcards: "True" if str(wildcards.cave) == "5" else "False"
+        ),
     resources:
         mem="4G",
-        time="00:50:00"
+        time="00:50:00",
     script:
         "workflow/plot/plot-mixing-vs-performance.py"
+
 
 rule plot_spectral_density:
     input:
@@ -240,9 +253,10 @@ rule plot_spectral_density:
         output_file=FIG_SPECTRAL_DENSITY_FILE,
     resources:
         mem="4G",
-        time="00:50:00"
+        time="00:50:00",
     script:
         "workflow/plot/plot-spectral-density.py"
+
 
 rule plot_performance_vs_mixing_all:
     input:
