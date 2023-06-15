@@ -23,17 +23,12 @@ mamba install -y -c bioconda -c conda-forge snakemake -y
 mamba install -c conda-forge graph-tool scikit-learn numpy==1.23.5 numba scipy pandas networkx seaborn matplotlib gensim ipykernel tqdm black -y
 ```
 
-2. Install the in-house packages:
-```bash
-cd libs/BeliefPropagation && pip install -e . && cd ../../
-cd libs/embcom && pip install -e . && cd ../../
-```
+2. Install the in-house packages
 
-3. Install the Python wrapper for the LFR network generator:
 ```bash
-wget --no-check-certificate 'https://docs.google.com/uc?export=download&id=1rUMowBj13WDDsZ_s6td-Fxw1qsLNIn6Z' -O - --no-check-certificate 'https://docs.google.com/uc?export=download&id=1rUMowBj13WDDsZ_s6td-Fxw1qsLNIn6Z' -qO- | tar -xz
-mv binary_networks libs/lfr_benchmark/lfr_benchmark/lfr-generator
-cd libs/lfr_benchmark/lfr_benchmark/lfr-generator && make
+cd libs/BeliefPropagation && python3 setup.py build && pip install -e .
+cd libs/LFR-benchmark && python3 setup.py build && pip install -e .
+cd libs/embcom && pip install -e .
 ```
 
 4. Create a file `config.yaml` with the following content and place it under the `workflow` folder:

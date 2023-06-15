@@ -1,12 +1,15 @@
+# -*- coding: utf-8 -*-
+# @Author: Sadamori Kojaku
+# @Date:   2023-06-08 16:37:34
+# @Last Modified by:   Sadamori Kojaku
+# @Last Modified time: 2023-06-15 13:13:15
 import os
 import sys
 from pathlib import Path
 import pandas as pd
 import numpy as np
 from scipy import sparse
-
-sys.path.append(os.path.abspath(os.path.join("./libs/lfr_benchmark")))
-from lfr_benchmark.generator import NetworkGenerator as NetworkGenerator
+import lfr
 
 if "snakemake" in sys.modules:
     params = snakemake.params["parameters"]
@@ -19,8 +22,8 @@ if "snakemake" in sys.modules:
     output_net_file = snakemake.output["output_file"]
     output_node_file = snakemake.output["output_node_file"]
 
-    maxk = None 
-    maxc = None 
+    maxk = None
+    maxc = None
 
     if (maxk is None) or (maxk == "None"):
         maxk = int(np.sqrt(10 * N))
@@ -44,13 +47,12 @@ params = {
     "maxc": maxc,
     "tau": tau,
     "tau2": tau2,
+    "mu": mu,
 }
 
 
-root = Path().parent.absolute()
-ng = NetworkGenerator()
-data = ng.generate(params, mu)
-os.chdir(root)
+ng = lfr.NetworkGenerator()
+data = ng.generate(params)
 
 # Load the network
 net = data["net"]
@@ -65,6 +67,6 @@ community_ids -= 1  # because the offset is one
 
 # Save
 sparse.save_npz(output_net_file, net)
-pd.DataFrame({"node_id": np.arange(len(community_ids)), "membership": community_ids}).to_csv(
-    output_node_file, index=False
-)
+pd.DataFrame(
+    {"node_id": np.arange(len(community_ids)), "membership": community_ids}
+).to_csv(output_node_file, index=False)
