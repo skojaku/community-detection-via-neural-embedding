@@ -19,15 +19,14 @@ To cite our work, please use the following BibTeX entry:
 conda create -n neuralemb python=3.9
 conda activate neuralemb
 conda install -c conda-forge mamba -y
-mamba install pytorch torchvision torchaudio cudatoolkit=11.6 -c pytorch -c conda-forge -y
 mamba install -y -c bioconda -c conda-forge snakemake -y
-mamba install -c conda-forge graph-tool scikit-learn numpy numba scipy pandas networkx seaborn matplotlib gensim ipykernel tqdm black faiss=1.7.3 -y
+mamba install -c conda-forge graph-tool scikit-learn numpy==1.23.5 numba scipy pandas networkx seaborn matplotlib gensim ipykernel tqdm black -y
 ```
 
 2. Install the in-house packages:
 ```bash
-cd libs/BeliefPropagation && pip install -e .
-cd libs/embcom && pip install -e .
+cd libs/BeliefPropagation && pip install -e . && cd ../../
+cd libs/embcom && pip install -e . && cd ../../
 ```
 
 3. Install the Python wrapper for the LFR network generator:
