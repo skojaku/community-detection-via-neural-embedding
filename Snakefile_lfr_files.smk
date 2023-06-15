@@ -2,16 +2,6 @@
 # Networks and communities
 # ================================
 
-lfr_net_params = {
-    "n": [10000],  # Network size
-    "k": [5, 10, 50],  # Average degree
-    "tau": [3],  # degree exponent
-    "tau2": [1],  # community size exponent
-    "minc": [50],  # min community size
-    "mu": ["%.2f" % d for d in np.linspace(0.1, 1, 19)],
-    "sample": np.arange(10),  # Number of samples
-}
-
 # Convert to a paramspace
 lfr_net_paramspace = to_paramspace(lfr_net_params)
 LFR_NET_FILE = j(NET_DIR, f"net_{lfr_net_paramspace.wildcard_pattern}.npz")
@@ -48,17 +38,6 @@ LFR_EVAL_FILE = j(EVA_DIR, f"score_{lfr_com_detect_paramspace.wildcard_pattern}.
 # =========
 # FIGURES
 # =========
-fig_lfr_params_perf_vs_mixing = {
-    "dim": [16, 32, 64, 128],
-    "k": [5, 10, 50],  # Average degree
-    "n": [10000],
-    "metric": ["cosine"],
-    "length": [10],
-    "tau":[2.1, 3],
-    "clustering": ["voronoi", "kmeans"],
-    "score_type": ["esim"],
-    "data": ["lfr"],
-}
 fig_lfr_perf_vs_mixing_paramspace = to_paramspace(fig_lfr_params_perf_vs_mixing)
 FIG_LFR_PERFORMANCE_VS_MIXING = j(
     FIG_DIR,

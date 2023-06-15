@@ -4,29 +4,16 @@ import itertools
 import pandas as pd
 from snakemake.utils import Paramspace
 
-
 configfile: "workflow/config.yaml"
-
-
 include: "./utils.smk"
-
-
-DATA_DIR = config["data_dir"]
-FIG_DIR = j("figs", "{data}")
-NET_DIR = j(DATA_DIR, "{data}", "networks")
-EMB_DIR = j(DATA_DIR, "{data}", "embedding")
-COM_DIR = j(DATA_DIR, "{data}", "communities")
-EVA_DIR = j(DATA_DIR, "{data}", "evaluations")
-VAL_SPEC_DIR = j(DATA_DIR, "{data}", "spectral_analysis")
-
-# All results
-EVAL_CONCAT_FILE = j(EVA_DIR, f"all-result.csv")
 
 # ==========
 # Parameters
 # ==========
 
-# Embedding
+#
+# Embedding parameters
+#
 emb_params = {
     "model_name": [
         "node2vec",
@@ -40,16 +27,87 @@ emb_params = {
     "dim": [16, 64, 128],
 }
 
-# Community detection
+#
+# Community detection parameters
+#
 com_detect_params = {
     "model_name": ["infomap", "flatsbm", "bp"],
 }
 
-# Clustering
+#
+# Data clustering parameters
+#
 clustering_params = {
     "metric": ["cosine"],
     "clustering": ["voronoi", "kmeans"],
 }
+
+#
+# Number of samples
+#
+N_SAMPLES = 10
+
+#
+# Parmaters for the planted Partition models
+#
+net_params = {
+    "n": [10000, 100000],  # Network size
+    "q": [2, 50],  # Number of communities
+    "cave": [5, 10, 50],  # average degree
+    "mu": ["%.2f" % d for d in np.linspace(0.1, 1, 19)],
+    "sample": np.arange(N_SAMPLES),  # Number of samples
+}
+
+#
+# Parmaters for the LFR benchmark
+#
+lfr_net_params = {
+    "n": [10000],  # Network size
+    "k": [5, 10, 50],  # Average degree
+    "tau": [3],  # degree exponent
+    "tau2": [1],  # community size exponent
+    "minc": [50],  # min community size
+    "mu": ["%.2f" % d for d in np.linspace(0.1, 1, 19)],
+    "sample": np.arange(N_SAMPLES),  # Number of samples
+}
+
+fig_params_perf_vs_mixing = {
+    "data": ["multi_partition_model"],
+    "n": net_params["n"],
+    "q": net_params["q"],
+    "cave": net_params["cave"],
+    "dim": emb_params["dim"],
+    "metric": ["cosine"],
+    "length": emb_params["window_length"],
+    "clustering": clustering_params["clustering"],
+    "score_type": ["esim", "nmi"],
+}
+
+fig_lfr_params_perf_vs_mixing = {
+    "data": ["lfr"],
+    "n": lfr_net_params["n"],
+    "k": lfr_net_params["k"],  # Average degree
+    "tau":lfr_net_params["tau"],
+    "length": emb_params["window_length"],
+    "dim": emb_params["dim"],
+    "metric": ["cosine"],
+    "clustering": clustering_params["clustering"],
+    "score_type": ["esim", "nmi"],
+}
+
+# =============================
+# Folders
+# =============================
+
+DATA_DIR = config["data_dir"]
+FIG_DIR = j("figs", "{data}")
+NET_DIR = j(DATA_DIR, "{data}", "networks")
+EMB_DIR = j(DATA_DIR, "{data}", "embedding")
+COM_DIR = j(DATA_DIR, "{data}", "communities")
+EVA_DIR = j(DATA_DIR, "{data}", "evaluations")
+
+# All results
+EVAL_CONCAT_FILE = j(EVA_DIR, f"all-result.csv")
 
 # ============
 # Data specific

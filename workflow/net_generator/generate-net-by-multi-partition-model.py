@@ -1,3 +1,8 @@
+# -*- coding: utf-8 -*-
+# @Author: Sadamori Kojaku
+# @Date:   2023-06-08 16:37:34
+# @Last Modified by:   Sadamori Kojaku
+# @Last Modified time: 2023-06-15 11:28:47
 """Generate networks with multiple communities."""
 # %%
 import sys
@@ -11,7 +16,7 @@ from scipy.sparse.csgraph import connected_components
 if "snakemake" in sys.modules:
     params = snakemake.params["parameters"]
     n = int(params["n"])
-    K = int(params["K"])
+    K = int(params["q"])
     cave = int(params["cave"])
     mu = float(params["mu"])
     output_file = snakemake.output["output_file"]
@@ -25,7 +30,6 @@ else:
 
 
 def generate_network(Cave, mixing_rate, N, q):
-
     memberships = np.sort(np.arange(N) % q)
 
     q = int(np.max(memberships) + 1)

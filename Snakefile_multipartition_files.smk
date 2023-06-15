@@ -1,17 +1,3 @@
-# =========
-# FIGURES
-# =========
-fig_params_perf_vs_mixing = {
-    "q": [2, 50],
-    "dim": [16, 32, 64, 128],
-    "n": [10000, 100000],
-    "metric": ["cosine"],
-    "length": [10],
-    "clustering": ["voronoi", "kmeans"],
-    "score_type": ["esim", "nmi"],
-    "cave": [5, 10, 50],
-    "data": ["multi_partition_model"],
-}
 fig_perf_vs_mixing_paramspace = to_paramspace(fig_params_perf_vs_mixing)
 FIG_PERFORMANCE_VS_MIXING = j(
     FIG_DIR,
@@ -22,15 +8,6 @@ FIG_PERFORMANCE_VS_MIXING = j(
 # ================================
 # Networks and communities
 # ================================
-
-net_params = {
-    "n": [10000, 100000],  # Network size
-    "K": [2, 50],  # Number of communities
-    "K": [2, 50],  # Number of communities
-    "cave": [5, 10, 50],  # average degree
-    "mu": ["%.2f" % d for d in np.linspace(0.1, 1, 19)],
-    "sample": np.arange(10),  # Number of samples
-}
 
 # Convert to a paramspace
 net_paramspace = to_paramspace(net_params)
@@ -246,16 +223,6 @@ rule plot_performance_vs_mixing:
         "workflow/plot/plot-mixing-vs-performance.py"
 
 
-rule plot_spectral_density:
-    input:
-        input_file=SPECTRAL_DENSITY_FILE,
-    output:
-        output_file=FIG_SPECTRAL_DENSITY_FILE,
-    resources:
-        mem="4G",
-        time="00:50:00",
-    script:
-        "workflow/plot/plot-spectral-density.py"
 
 
 rule plot_performance_vs_mixing_all:
