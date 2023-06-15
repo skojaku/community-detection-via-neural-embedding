@@ -2,6 +2,7 @@
 
 ## Paper
 ```
+Sadamori Kojaku, Filippo Radicchi, Yong-Yeol Ahn, Santo Fortunato. "Network community detection via neural embeddings", arXiv: xxxx.xxx.xxx
 ```
 
 To cite our work, please use the following BibTeX entry:
@@ -64,7 +65,7 @@ cd libs/embcom && pip install -e .
 import embcom
 import networkx as nx
 
-Load the network for demonstration
+# Load the network for demonstration
 G = nx.karate_club_graph()
 A = nx.adjacency_matrix(G)
 
@@ -106,3 +107,7 @@ model = embcom.embeddings.NonBacktrackingSpectralEmbedding()
 
 We have developed a Python wrapper for the belief propagation method. See [this package](https://github.com/skojaku/BeliefPropagation) for details.
 
+
+### LFR benchmark
+
+We used the original code for the LFR network models,w ith [our Python wrapper](https://github.com/skojaku/LFR-benchmark).
