@@ -1,0 +1,51 @@
+Expectation-maximization learning of Stochastic Block Model
+Author: Aurelien Decelle, Florent Krzakala, Lenka Zdeborova and Pan Zhang
+Maintainer: Pan Zhang ( july.lzu@gmail.com )
+Companion paper: ........
+
+Version 1.1
+Release time 30/05/2012
+
+-----------------------------------------------------------------------------------------
+Function:
+1-) Generation of networks by stochastic block model.
+2-) Inference of group assgignments from a given matrix by belief propagation or variational mean-field method.
+3-) Expectation-maximization learning using beilief propagation or variational mean-field method at E-step.
+4-) Spectral partitioning using random walk matrix of network (requires python, numpy and scipy support) or modularity matrix of network (requires python and igraph).
+
+========================================================================================
+Compiling:
+Simply use 'make' inside 'src' dir.
+Compiling and running has been tested under g++ version 4.4 (Debian 6.0.5 and OS X Lion)
+NOTE THAT if you want to use spectral partition to initialize EM leaning, you need to copy 'spc.py'(corresponding to spectral clustering using random walk matrix) and 'mspc.py'(corresponding to spectral 
+clustering using modularity matrix) to a folder that included in your system path.
+
+-----------------------------------------------------------------------------------------
+Running examples:
+Generating a network with 1000 nodes, 2 groups, average degree 3 and epsilon=0.15, and write the network in "gml" format into a.gml:
+	sbm gen -n1000 -q2 -P0.15,3.0 -w a.gml
+Inference from graph a.gml, by BP. pa and cab matrix are set by epsilon=0.15 and c=3.0: 
+	sbm infer -l a.gml -n1000 -q2 -P0.15,3.0 -v1
+Inference from graph a.gml, by Mean-field. pa and cab matrix is set directly by -p and -c parameters: 
+	sbm infer -l a.gml -q2 -p0.5 -c10,2,10 -v1 -m nmf
+Learning with 4 communities and random initial matrix, using vanilla model: 
+	sbm learn -q 4 -l a.gml
+Learning with 4 communities and random initial matrix, using degree corrected model 1: 
+	sbm learn -q 4 -l a.gml -d 1
+Learning with 2 communities and given parameters: 
+	sbm learn -l a.gml -n10000 -P0.10,3.0 -v0
+Learning with 4 communities and given parameters: 
+	sbm learn -q4 -l a.gml -p0.25,0.25,0.25 -c50,5,5,5,50,5,5,50,5,50 -e1.0e-8 -E 1.0e-8 -r 0.1 -R0.1 -D100
+Learning with 2 communities, pa and cab are taken from file '1.cab': 
+	sbm learn -l a.gml -n10000 -v0 -L 1.cab
+Learning starting from a na,cab matrix given by spectral clustering using vanilla model:
+	sbm spc -l a.gml -q4 -d 0
+Learning starting from a na,cab matrix given by spectral clustering using degree corrected model 1:
+	sbm spc -l a.gml -q4 -d 1
+Learning starting from a na,cab matrix given by Newman's leading eigenvector of modularity matrix method:
+	sbm spc -l a.gml -q4 --spcmode 4
+
+use sbm -h for more information
+
+========================================================================================
+The last version of this program is at http://www.pct.espci.fr/~florent/
