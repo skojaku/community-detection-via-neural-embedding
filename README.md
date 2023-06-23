@@ -7,7 +7,15 @@ Sadamori Kojaku, Filippo Radicchi, Yong-Yeol Ahn, Santo Fortunato. "Network comm
 
 To cite our work, please use the following BibTeX entry:
 ```bibtex
-@article{neuralemb,
+@article{KojakuNetworkCommunityNeuralEmbedding2023,
+        title        = {Network community detection via neural embeddings},
+        author       = {Sadamori Kojaku and Filippo Radicchi and Yong-Yeol Ahn and Santo Fortunato},
+        year         = 2023,
+        publisher    = {{arXiv}},
+        number       = {arXiv:2111.},
+        eprint       = {arXiv:2111.},
+        archiveprefix = {arxiv},
+        keywords     = {detectability limit},
 }
 ```
 
