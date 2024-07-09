@@ -97,7 +97,7 @@ model.fit(net_)
 if model_name in ["torch-node2vec", "torch-modularity", "torch-laplacian-eigenmap"]:
     emb_ = model.transform()
 else:
-    emb_ = model.transform(dim=dim)
+    emb_ = model.transform(dim=np.minimum(dim, net_.shape[0] - 5))
 
 # Enlarge the embedding to the size of the original net
 # All nodes that do not belong to the largest connected component have nan
