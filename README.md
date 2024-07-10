@@ -1,4 +1,4 @@
-# Network clustering via neural embedding
+# Network community detection via neural embedding
 
 ## Paper
 - [arXiv version](https://arxiv.org/abs/2306.13400)
