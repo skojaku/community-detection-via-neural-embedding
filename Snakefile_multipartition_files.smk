@@ -223,6 +223,7 @@ rule plot_performance_vs_mixing:
             "node2vec",
             "deepwalk",
             "line",
+            "adjspec",
             "modspec",
             "leigenmap",
             "nonbacktracking",

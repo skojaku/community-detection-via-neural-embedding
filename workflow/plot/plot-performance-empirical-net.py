@@ -36,8 +36,8 @@ focal_methods = [
     "line",
     "nonbacktracking",
     "leigenmap",
+    "adjspec",
     "modspec",
-    "modspec2",
     "flatsbm",
 ]
 

@@ -158,7 +158,7 @@ rule plot_lfr_performance_vs_mixing:
         output_file=FIG_LFR_PERFORMANCE_VS_MIXING,
     params:
         parameters=fig_lfr_perf_vs_mixing_paramspace.instance,
-        model_names = ["node2vec", "deepwalk", "line", "modspec", "leigenmap", "nonbacktracking", "bp", "infomap", "flatsbm" ],
+        model_names = ["node2vec", "deepwalk", "line", "adjspec", "modspec", "leigenmap", "nonbacktracking", "bp", "infomap", "flatsbm" ],
         with_legend = lambda wildcards: "True" if str(wildcards.k)=="5" else "False"
     resources:
         mem="4G",

@@ -151,7 +151,8 @@ rule all_mpm:
 
 rule all_emp:
     input:
-        expand(EVAL_CONCAT_FILE, data = ["empirical"])
+        expand(EVAL_CONCAT_FILE, data = ["empirical"]),
+        expand(FIG_EMP_PERFORMANCE, data="empirical", clustering=clustering_params["clustering"])
 
 rule figs:
     input:
