@@ -99,6 +99,14 @@ use rule kmeans_clustering_multi_partition_model as kmeans_clustering_lfr with:
     params:
         parameters=lfr_com_detect_emb_paramspace.instance,
 
+use rule silhouette_clustering_multi_partition_model as silhouette_clustering_lfr with:
+    input:
+        emb_file=LFR_EMB_FILE,
+        com_file=LFR_NODE_FILE,
+    output:
+        output_file=LFR_COM_DETECT_EMB_FILE,
+    params:
+        parameters=lfr_com_detect_emb_paramspace.instance,
 
 use rule community_detection_multi_partition_model as community_detection_lfr with:
     input:

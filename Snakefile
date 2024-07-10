@@ -46,7 +46,7 @@ clustering_params = {
 #
 # Number of samples
 #
-N_SAMPLES = 10
+N_SAMPLES = 1
 
 #
 # Parmaters for the planted Partition models

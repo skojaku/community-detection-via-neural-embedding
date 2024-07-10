@@ -124,6 +124,23 @@ rule kmeans_clustering_multi_partition_model:
         "workflow/community-detection/kmeans-clustering.py"
 
 
+rule silhouette_clustering_multi_partition_model:
+    input:
+        emb_file=EMB_FILE,
+        com_file=NODE_FILE,
+    output:
+        output_file=COM_DETECT_EMB_FILE,
+    params:
+        parameters=com_detect_emb_paramspace.instance,
+    wildcard_constraints:
+        clustering="silhouette",
+    resources:
+        mem="12G",
+        time="01:00:00",
+    script:
+        "workflow/community-detection/silhouette-kmeans.py"
+
+
 rule community_detection_multi_partition_model:
     input:
         net_file=NET_FILE,
