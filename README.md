@@ -2,13 +2,18 @@
 
 ## Paper
 ```
-Sadamori Kojaku, Filippo Radicchi, Yong-Yeol Ahn, Santo Fortunato. "Network community detection via neural embeddings", arXiv: xxxx.xxx.xxx
+Sadamori Kojaku, Filippo Radicchi, Yong-Yeol Ahn, Santo Fortunato. "Network community detection via neural embeddings", arXiv: 2306.13400
 ```
 
 To cite our work, please use the following BibTeX entry:
 ```bibtex
-@article{neuralemb,
+@article{kojaku2023network,
+  title={Network community detection via neural embeddings},
+  author={Kojaku, Sadamori and Radicchi, Filippo and Ahn, Yong-Yeol and Fortunato, Santo},
+  journal={arXiv preprint arXiv:2306.13400},
+  year={2023}
 }
+
 ```
 
 ## Reproducing Our Results
@@ -89,18 +94,17 @@ emb = model.transform(dim=dim)
 
 Other embedding models:
 
-| Model Name                     | Description                                      |
-|-------------------------------|--------------------------------------------------|
-| node2vec                      | Node2Vec embedding                               |
-| depthfirst-node2vec           | Depth-first Node2Vec embedding                   |
-| deepwalk                      | DeepWalk embedding                               |
-| line                          | LINE embedding                                   |
-| glove                         | GloVe embedding                                  |
-| leigenmap                     | Laplacian EigenMap embedding                     |
-| adjspec                       | Adjacency Spectral Embedding                     |
-| modspec2                      | Modularity Spectral Embedding                    |
-| nonbacktracking               | Non-Backtracking Spectral Embedding              |
-| linearized-node2vec           | Linearized Node2Vec embedding                    |
+| Class Name                        | Description                                      |
+|-----------------------------------|--------------------------------------------------|
+| `embcom.embeddings.Node2Vec`                          | Node2Vec embedding                               |
+| `embcom.embeddings.DeepWalk`                          | DeepWalk embedding                               |
+| `embcom.embeddings.LINE`                              | LINE embedding                                   |
+| `embcom.embeddings.GloVe`                             | GloVe embedding                                  |
+| `embcom.embeddings.LaplacianEigenMap`                 | Laplacian EigenMap embedding                     |
+| `embcom.embeddings.AdjacencySpectralEmbedding`        | Adjacency Spectral Embedding                     |
+| `embcom.embeddings.ModularitySpectralEmbedding`       | Modularity Spectral Embedding                    |
+| `embcom.embeddings.NonBacktrackingSpectralEmbedding`  | Non-Backtracking Spectral Embedding              |
+| `embcom.embeddings.LinearizedNode2Vec`                | Linearized Node2Vec embedding                    |
 
 
 ### Belief Propagation Algorithm
