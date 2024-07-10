@@ -188,7 +188,6 @@ rule plot_lfr_performance_vs_mixing:
             "leigenmap",
             "nonbacktracking",
             "bp",
-            "infomap",
             "flatsbm",
         ],
         with_legend=lambda wildcards: "True" if str(wildcards.k) == "5" else "False",

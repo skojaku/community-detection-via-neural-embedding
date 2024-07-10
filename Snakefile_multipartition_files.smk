@@ -232,7 +232,6 @@ rule plot_performance_vs_mixing:
             "leigenmap",
             "nonbacktracking",
             "bp",
-            "infomap",
             "flatsbm",
         ],
         with_legend=(
