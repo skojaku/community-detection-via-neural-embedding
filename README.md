@@ -1,19 +1,24 @@
 # Network clustering via neural embedding
 
 ## Paper
+- [arXiv version](https://arxiv.org/abs/2306.13400)
+  
 ```
-Sadamori Kojaku, Filippo Radicchi, Yong-Yeol Ahn, Santo Fortunato. "Network community detection via neural embeddings", arXiv: 2306.13400
+Sadamori Kojaku, Filippo Radicchi, Yong-Yeol Ahn, Santo Fortunato. "Network community detection via neural embeddings", arXiv: 2306.13400(https://arxiv.org/abs/2306.13400)
 ```
 
 To cite our work, please use the following BibTeX entry:
 ```bibtex
-@article{kojaku2023network,
-  title={Network community detection via neural embeddings},
-  author={Kojaku, Sadamori and Radicchi, Filippo and Ahn, Yong-Yeol and Fortunato, Santo},
-  journal={arXiv preprint arXiv:2306.13400},
-  year={2023}
+@article{KojakuNetworkCommunityNeuralEmbedding2023,
+        title        = {Network community detection via neural embeddings},
+        author       = {Sadamori Kojaku and Filippo Radicchi and Yong-Yeol Ahn and Santo Fortunato},
+        year         = 2023,
+        publisher    = {{arXiv}},
+        number       = {arXiv:2306.13400},
+        eprint       = {arXiv:2306.13400},
+        archiveprefix = {arxiv},
+        keywords     = {detectability limit},
 }
-
 ```
 
 ## Reproducing Our Results
