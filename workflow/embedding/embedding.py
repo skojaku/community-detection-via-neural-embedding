@@ -2,11 +2,12 @@
 # @Author: Sadamori Kojaku
 # @Date:   2022-10-14 15:08:01
 # @Last Modified by:   Sadamori Kojaku
-# @Last Modified time: 2023-06-15 12:00:39
+# @Last Modified time: 2023-06-08 17:05:24
 # %%
 import logging
 import sys
 
+import GPUtil
 import numpy as np
 import pandas as pd
 from scipy import sparse
@@ -35,18 +36,19 @@ if "snakemake" in sys.modules:
     model_name = params["model_name"]
     num_walks = int(params["nWalks"]) if "nWalks" in params else 40
 else:
-    netfile = "../../data/multi_partition_model/networks/net_n~100000_K~2_cave~10_mu~0.10_sample~0.npz"
-    com_file = "../../data/multi_partition_model/networks/node_n~100000_K~2_cave~10_mu~0.10_sample~0.npz"
+    netfile = "../../data/empirical/networks/net_netdata~polblog.npz"
+    com_file = "../../data/empirical/networks/node_netdata~polblog.npz"
     embfile = "tmp.npz"
     dim = 64
     window_length = 10
-    model_name = "torch-modularity"
-    num_walks = 120
+    model_name = "leigenmap"
+    num_walks = 40
 
 
 net = sparse.load_npz(netfile)
 net = net + net.T
 net.data = net.data * 0 + 1
+n_nodes = net.shape[0]
 
 true_membership = pd.read_csv(com_file)["membership"].values.astype(int)
 
@@ -54,29 +56,105 @@ if dim == 0:
     dim = len(set(true_membership)) - 1
     dim = np.minimum(net.shape[0] - 1, dim)
 
+if "touch" in model_name:
+    device = GPUtil.getFirstAvailable(
+        order="random",
+        maxLoad=1,
+        maxMemory=0.3,
+        attempts=99999,
+        interval=60 * 1,
+        verbose=False,
+    )[0]
+    device = f"cuda:{device}"
+else:
+    device = "cpu"
+
+
 #
 # Embedding models
 #
-if model_name == "node2vec":
+if model_name == "levy-word2vec":
+    model = embcom.embeddings.LevyWord2Vec(
+        window_length=window_length, num_walks=num_walks
+    )
+elif model_name == "node2vec":
+    # model = fastnode2vec.Node2Vec(window_length=window_length, num_walks=num_walks)
     model = embcom.embeddings.Node2Vec(window_length=window_length, num_walks=num_walks)
 elif model_name == "depthfirst-node2vec":
+    # model = fastnode2vec.Node2Vec(
+    #    window_length=window_length, num_walks=num_walks, p=10, q=0.1
+    # )
     model = embcom.embeddings.Node2Vec(
         window_length=window_length, num_walks=num_walks, p=100, q=1
     )
 elif model_name == "deepwalk":
+    # model = fastnode2vec.DeepWalk(window_length=window_length, num_walks=num_walks)
     model = embcom.embeddings.DeepWalk(window_length=window_length, num_walks=num_walks)
 elif model_name == "line":
-    model = embcom.embeddings.Node2Vec(window_length=1, num_walks=num_walks, p=1, q=1)
+    model = embcom.embeddings.Node2Vec(
+        window_length=1, num_walks=num_walks * 10, p=1, q=1
+    )
+elif model_name == "glove":
+    model = embcom.embeddings.Glove(window_length=window_length, num_walks=num_walks)
 elif model_name == "leigenmap":
     model = embcom.embeddings.LaplacianEigenMap()
 elif model_name == "adjspec":
     model = embcom.embeddings.AdjacencySpectralEmbedding()
 elif model_name == "modspec":
     model = embcom.embeddings.ModularitySpectralEmbedding()
+elif model_name == "modspec2":
+    model = embcom.embeddings.ModularitySpectralEmbedding2()
 elif model_name == "nonbacktracking":
     model = embcom.embeddings.NonBacktrackingSpectralEmbedding()
+elif model_name == "node2vec-matrixfact":
+    model = embcom.embeddings.Node2VecMatrixFactorization(
+        window_length=window_length, blocking_membership=None
+    )
+elif model_name == "highorder-modspec":
+    model = embcom.embeddings.HighOrderModularitySpectralEmbedding(
+        window_length=window_length
+    )
 elif model_name == "linearized-node2vec":
     model = embcom.embeddings.LinearizedNode2Vec(window_length=window_length)
+elif model_name == "non-backtracking-node2vec":
+    model = embcom.embeddings.NonBacktrackingNode2Vec(
+        window_length=window_length, num_walks=num_walks
+    )
+elif model_name == "non-backtracking-deepwalk":
+    model = embcom.embeddings.NonBacktrackingDeepWalk(
+        window_length=window_length, num_walks=num_walks
+    )
+elif model_name == "non-backtracking-glove":
+    model = embcom.embeddings.NonBacktrackingGlove(
+        window_length=window_length, num_walks=num_walks
+    )
+elif model_name == "torch-node2vec":
+    model = node2vecs.TorchNode2Vec(
+        window=window_length,
+        num_walks=num_walks,
+        vector_size=dim,
+        batch_size=256,
+        device=device,
+        negative=1,
+    )
+elif model_name == "torch-modularity":
+    model = node2vecs.TorchModularity(
+        window=window_length,
+        num_walks=num_walks,
+        vector_size=dim,
+        batch_size=256,
+        device=device,
+        negative=1,
+    )
+elif model_name == "torch-laplacian-eigenmap":
+    model = node2vecs.TorchLaplacianEigenMap(
+        window=window_length,
+        num_walks=num_walks,
+        vector_size=dim,
+        batch_size=256,
+        device=device,
+        negative=1,
+    )
 
 # %%
 # Embedding
@@ -92,8 +170,8 @@ H = sparse.csr_matrix(
 )
 HT = sparse.csr_matrix(H.T)
 net_ = HT @ net @ H
+# %%
 model.fit(net_)
-
 if model_name in ["torch-node2vec", "torch-modularity", "torch-laplacian-eigenmap"]:
     emb_ = model.transform()
 else:
@@ -104,6 +182,9 @@ else:
 ids = np.where(u_component_ids[np.argmax(freq)] != component_ids)[0]
 emb = H @ emb_
 emb[ids, :] = np.nan
+# G = nx.karate_club_graph()
+# A = nx.adjacency_matrix(G)
+# labels = np.unique([d[1]["club"] for d in G.nodes(data=True)], return_inverse=True)[1]
 # %%
 #
 # Save
@@ -115,3 +196,10 @@ np.savez_compressed(
     dim=dim,
     model_name=model_name,
 )
+# %%
+# import seaborn as sns
+
+# df = pd.DataFrame({"x": emb[:, 0], "y": emb[:, 1], "membership": true_membership})
+# sns.pointplot(data=df, x="x", y="y", hue="membership")
+
+# %%

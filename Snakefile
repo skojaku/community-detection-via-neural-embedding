@@ -21,6 +21,7 @@ emb_params = {
         "line",
         "leigenmap",
         "modspec",
+        "modspec2",
         "nonbacktracking",
     ],
     "window_length": [10],
