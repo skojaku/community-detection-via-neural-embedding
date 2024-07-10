@@ -18,6 +18,7 @@ def get_model_order():
         "nonbacktracking",
         "linearized-node2vec",
         "modspec",
+        "modspec2",
         "leigenmap",
         "bp",
         "infomap",
@@ -33,7 +34,8 @@ def get_model_names():
         "bp": "Belief Propagation",
         "node2vec": "node2vec",
         "linearized-node2vec": "Spectral node2vec",
-        "modspec": "Modularity",
+        "modspec": "Adjacency",
+        "modspec2": "Modularity",
         "leigenmap": "L-EigenMap",
         "torch-modularity": "Neural modularity",
         "torch-laplacian-eigenmap": "Neural L-EigenMap",
@@ -50,7 +52,7 @@ def get_model_names():
 
 def get_model_colors():
     cmap = sns.color_palette().as_hex()
-    bcmap = sns.color_palette("muted").as_hex()
+    bcmap = sns.color_palette().as_hex()
     mcmap = sns.color_palette("colorblind").as_hex()
 
     neural_emb_color = bcmap[3]
@@ -65,10 +67,11 @@ def get_model_colors():
         "torch-modularity": neural_emb_color_2,
         "torch-laplacian-eigenmap": sns.desaturate(neural_emb_color_2, 0.2),
         "modspec": sns.desaturate(spec_emb_color, 0.8),
-        "leigenmap": sns.desaturate(spec_emb_color, 0.2),
+        "modspec2": sns.desaturate(spec_emb_color, 0.2),
+        "leigenmap": "#c2c1f1",
         "bp": "k",
-        "infomap": "#4d4d4d",
-        "flatsbm": "#8d8d8d",
+        "infomap": "#8d8d8d",
+        "flatsbm": "#998248",
         "nonbacktracking": "blue",
         "non-backtracking-node2vec": "red",
         "non-backtracking-deepwalk": "blue",
@@ -77,22 +80,24 @@ def get_model_colors():
 
 
 def get_model_edge_colors():
+    white_color = "white"
     return {
         "node2vec": "black",
-        "deepwalk": "white",
-        "line": "white",
+        "deepwalk": white_color,
+        "line": white_color,
         "torch-modularity": "black",
         "torch-laplacian-eigenmap": "black",
         "linearized-node2vec": "black",
-        "modspec": "white",
-        "leigenmap": "white",
+        "modspec": white_color,
+        "modspec2": "k",
+        "leigenmap": "k",
         "bp": "k",
         "nonbacktracking": "black",
-        "non-backtracking-node2vec": "white",
-        "non-backtracking-deepwalk": "white",
-        "infomap": "white",
-        "flatsbm": "white",
-        "depthfirst-node2vec": "white",
+        "non-backtracking-node2vec": white_color,
+        "non-backtracking-deepwalk": white_color,
+        "infomap": "k",
+        "flatsbm": "k",
+        "depthfirst-node2vec": white_color,
     }
 
 
@@ -105,6 +110,7 @@ def get_model_linestyles():
         "torch-laplacian-eigenmap": (2, 2),
         "linearized-node2vec": (1, 0),
         "modspec": (1, 1),
+        "modspec2": (1, 2),
         "leigenmap": (2, 2),
         "nonbacktracking": (1, 0),
         "bp": (1, 0),
@@ -123,6 +129,7 @@ def get_model_markers():
         "deepwalk": "s",
         "linearized-node2vec": "o",
         "modspec": "o",
+        "modspec2": "o",
         "leigenmap": "o",
         "nonbacktracking": "o",
         "non-backtracking-node2vec": "o",
@@ -143,14 +150,15 @@ def get_model_marker_size():
         "deepwalk": 10,
         "linearized-node2vec": 10,
         "modspec": 10,
+        "modspec2": 10,
         "leigenmap": 10,
         "nonbacktracking": 10,
         "non-backtracking-node2vec": 10,
         "depthfirst-node2vec": 10,
         "non-backtracking-deepwalk": 10,
-        "bp": 10,
-        "infomap": 10,
-        "flatsbm": 10,
+        "bp": 11,
+        "infomap": 11,
+        "flatsbm": 11,
     }
 
 
@@ -164,6 +172,7 @@ def get_model_groups():
         "deepwalk": "neural",
         "linearized-node2vec": "spectral",
         "modspec": "spectral",
+        "modspec2": "spectral",
         "leigenmap": "spectral",
         "nonbacktracking": "spectral",
         "non-backtracking-node2vec": "neural",

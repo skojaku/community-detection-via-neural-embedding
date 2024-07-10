@@ -8,14 +8,16 @@ import sys
 
 if "snakemake" in sys.modules:
     result_file = snakemake.input["result_file"]
+    output_file = snakemake.output["output_file"]
+    focal_clustering = snakemake.params["clustering"]
 else:
-    result_file = "../../data/empirical/all-result.csv"
+    result_file = "../../data/empirical/evaluations/all-result.csv"
+    focal_clustering = "silhouette"
+    output_file = "tmp.pdf"
+
 data_table = pd.read_csv(result_file)
 
 data_table["clustering"] = data_table["clustering"].fillna("community-detection")
-
-# Prepare data for plotting
-focal_clustering = ["silhouette"]
 
 netdata_list = [
     "polblog",
@@ -38,26 +40,21 @@ focal_methods = [
     "modspec2",
     "flatsbm",
 ]
+
 df = data_table.copy()
-
-dg0 = df.query("(clustering == 'community-detection')")
-dg1 = df.query("(clustering != 'community-detection')")
-
-dflist = [dg1]
-for clus in focal_clustering:
-    dg0_ = dg0.copy()
-    dg0_["clustering"] = clus
-    dflist.append(dg0_)
-
-df = pd.concat(dflist)
+df.query("clustering != 'community-detection'")["clustering"].unique()
+# %%
 
 df = df.query(
     f"((clustering == 'community-detection') or (clustering == @focal_clustering)) and (score_type=='{eval_metric}') and ((normalize==False and dimThreshold==False) or normalize.isnull())"
 )
 
+
+# %%
 df = df.query("name in @focal_methods")
 df = df.query("netdata in @netdata_list")
 
+# %%
 model_list = cp.get_model_order()
 data_model_list = df["name"].unique().tolist()
 model_list = [k for k in model_list if k in data_model_list]
@@ -127,6 +124,6 @@ for i, (ax, netdata) in enumerate(zip(axes.flatten(), netdata_list)):
 
 sns.despine()
 
-fig.savefig(
-    f"empirical-performance~{focal_clustering[0]}.pdf", bbox_inches="tight", dpi=300
-)
+fig.savefig(output_file, bbox_inches="tight", dpi=300)
+
+# %%

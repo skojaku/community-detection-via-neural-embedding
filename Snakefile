@@ -40,7 +40,7 @@ com_detect_params = {
 #
 clustering_params = {
     "metric": ["cosine"],
-    "clustering": ["voronoi", "kmeans"],
+    "clustering": ["voronoi", "kmeans", "silhouette"],
 }
 
 #
@@ -174,4 +174,4 @@ rule figs:
 
 rule _all:
     input:
-        expand(FIG_EMP_PERFORMANCE, data="empirical")
+        expand(FIG_EMP_PERFORMANCE, data="empirical", clustering=clustering_params["clustering"])
