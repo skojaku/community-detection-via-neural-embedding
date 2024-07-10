@@ -4,8 +4,12 @@ import itertools
 import pandas as pd
 from snakemake.utils import Paramspace
 
+
 configfile: "workflow/config.yaml"
+
+
 include: "./utils.smk"
+
 
 # ==========
 # Parameters
@@ -88,7 +92,7 @@ fig_lfr_params_perf_vs_mixing = {
     "data": ["lfr"],
     "n": lfr_net_params["n"],
     "k": lfr_net_params["k"],  # Average degree
-    "tau":lfr_net_params["tau"],
+    "tau": lfr_net_params["tau"],
     "length": emb_params["window_length"],
     "dim": emb_params["dim"],
     "metric": ["cosine"],
@@ -114,15 +118,14 @@ EVAL_CONCAT_FILE = j(EVA_DIR, f"all-result.csv")
 # Data specific
 # ============
 
-FIG_PERFORMANCE_VS_MIXING_ALL = j(FIG_DIR, "all_perf_vs_mixing.pdf",)
+FIG_PERFORMANCE_VS_MIXING_ALL = j(
+    FIG_DIR,
+    "all_perf_vs_mixing.pdf",
+)
 
 
 include: "./Snakefile_multipartition_files.smk"
-
-
 include: "./Snakefile_lfr_files.smk"
-
-
 include: "./Snakefile_empirical.smk"
 
 
@@ -135,28 +138,44 @@ DATA_LIST = ["multi_partition_model", "lfr", "empirical"]
 
 rule all:
     input:
-        expand(EVAL_CONCAT_FILE, data = DATA_LIST),
+        expand(EVAL_CONCAT_FILE, data=DATA_LIST),
         expand(FIG_PERFORMANCE_VS_MIXING, **fig_params_perf_vs_mixing),
         expand(FIG_LFR_PERFORMANCE_VS_MIXING, **fig_lfr_params_perf_vs_mixing),
         expand(FIG_PERFORMANCE_VS_MIXING_ALL, data=DATA_LIST),
-        expand(FIG_EMP_PERFORMANCE, data="empirical", clustering=clustering_params["clustering"])
+        expand(
+            FIG_EMP_PERFORMANCE,
+            data="empirical",
+            clustering=clustering_params["clustering"],
+        ),
+
 
 rule all_lfr:
     input:
-        expand(EVAL_CONCAT_FILE, data = ["lfr"])
+        expand(EVAL_CONCAT_FILE, data=["lfr"]),
+
 
 rule all_mpm:
     input:
-        expand(EVAL_CONCAT_FILE, data = ["multi_partition_model"])
+        expand(EVAL_CONCAT_FILE, data=["multi_partition_model"]),
+
 
 rule all_emp:
     input:
-        expand(EVAL_CONCAT_FILE, data = ["empirical"]),
-        expand(FIG_EMP_PERFORMANCE, data="empirical", clustering=clustering_params["clustering"])
+        expand(EVAL_CONCAT_FILE, data=["empirical"]),
+        expand(
+            FIG_EMP_PERFORMANCE,
+            data="empirical",
+            clustering=clustering_params["clustering"],
+        ),
+
 
 rule figs:
     input:
         expand(FIG_PERFORMANCE_VS_MIXING, **fig_params_perf_vs_mixing),
         expand(FIG_LFR_PERFORMANCE_VS_MIXING, **fig_lfr_params_perf_vs_mixing),
         expand(FIG_PERFORMANCE_VS_MIXING_ALL, data=DATA_LIST),
-        expand(FIG_EMP_PERFORMANCE, data="empirical", clustering=clustering_params["clustering"])
+        expand(
+            FIG_EMP_PERFORMANCE,
+            data="empirical",
+            clustering=clustering_params["clustering"],
+        ),

@@ -22,7 +22,9 @@ lfr_com_detect_paramspace = to_paramspace([lfr_net_params, com_detect_params])
 LFR_COM_DETECT_FILE = j(COM_DIR, f"{lfr_com_detect_paramspace.wildcard_pattern}.npz")
 
 # Community detection by clustering to embedding
-lfr_com_detect_emb_paramspace = to_paramspace([lfr_net_params, emb_params, clustering_params])
+lfr_com_detect_emb_paramspace = to_paramspace(
+    [lfr_net_params, emb_params, clustering_params]
+)
 LFR_COM_DETECT_EMB_FILE = j(
     COM_DIR, f"clus_{lfr_com_detect_emb_paramspace.wildcard_pattern}.npz"
 )
@@ -31,7 +33,9 @@ LFR_COM_DETECT_EMB_FILE = j(
 # ==========
 # Evaluation
 # ==========
-LFR_EVAL_EMB_FILE = j(EVA_DIR, f"score_clus_{lfr_com_detect_emb_paramspace.wildcard_pattern}.npz")
+LFR_EVAL_EMB_FILE = j(
+    EVA_DIR, f"score_clus_{lfr_com_detect_emb_paramspace.wildcard_pattern}.npz"
+)
 LFR_EVAL_FILE = j(EVA_DIR, f"score_{lfr_com_detect_paramspace.wildcard_pattern}.npz")
 
 
@@ -44,6 +48,7 @@ FIG_LFR_PERFORMANCE_VS_MIXING = j(
     "perf_vs_mixing",
     f"fig_{fig_lfr_perf_vs_mixing_paramspace.wildcard_pattern}.pdf",
 )
+
 
 # ======
 # RULES
@@ -58,12 +63,13 @@ rule generate_lfr_net:
         output_file=LFR_NET_FILE,
         output_node_file=LFR_NODE_FILE,
     wildcard_constraints:
-        data="lfr"
+        data="lfr",
     resources:
         mem="12G",
-        time="04:00:00"
+        time="04:00:00",
     script:
         "workflow/net_generator/generate-lfr-net.py"
+
 
 #
 # Embedding
@@ -90,6 +96,7 @@ use rule voronoi_clustering_multi_partition_model as voronoi_clustering_lfr with
     params:
         parameters=lfr_com_detect_emb_paramspace.instance,
 
+
 use rule kmeans_clustering_multi_partition_model as kmeans_clustering_lfr with:
     input:
         emb_file=LFR_EMB_FILE,
@@ -99,6 +106,7 @@ use rule kmeans_clustering_multi_partition_model as kmeans_clustering_lfr with:
     params:
         parameters=lfr_com_detect_emb_paramspace.instance,
 
+
 use rule silhouette_clustering_multi_partition_model as silhouette_clustering_lfr with:
     input:
         emb_file=LFR_EMB_FILE,
@@ -107,6 +115,7 @@ use rule silhouette_clustering_multi_partition_model as silhouette_clustering_lf
         output_file=LFR_COM_DETECT_EMB_FILE,
     params:
         parameters=lfr_com_detect_emb_paramspace.instance,
+
 
 use rule community_detection_multi_partition_model as community_detection_lfr with:
     input:
@@ -128,6 +137,7 @@ use rule evaluate_communities as evaluate_communities_lfr with:
     output:
         output_file=LFR_EVAL_FILE,
 
+
 use rule evaluate_communities_for_embedding as evaluate_communities_for_embedding_lfr with:
     input:
         detected_group_file=LFR_COM_DETECT_EMB_FILE,
@@ -135,18 +145,29 @@ use rule evaluate_communities_for_embedding as evaluate_communities_for_embeddin
     output:
         output_file=LFR_EVAL_EMB_FILE,
 
+
 rule concatenate_results_lfr:
     input:
-        input_files = expand(LFR_EVAL_FILE, data="lfr", **lfr_net_params, **com_detect_params) + expand(LFR_EVAL_EMB_FILE, data="lfr", **lfr_net_params, **emb_params, **clustering_params)
+        input_files=expand(
+            LFR_EVAL_FILE, data="lfr", **lfr_net_params, **com_detect_params
+        )
+        + expand(
+            LFR_EVAL_EMB_FILE,
+            data="lfr",
+            **lfr_net_params,
+            **emb_params,
+            **clustering_params,
+        ),
     output:
-        output_file=EVAL_CONCAT_FILE
+        output_file=EVAL_CONCAT_FILE,
     wildcard_constraints:
-        data="lfr"
+        data="lfr",
     params:
         to_int=["n", "k", "tau", "tau2", "minc", "dim", "sample", "length", "dim"],
         to_float=["mu", "tau"],
     script:
         "workflow/evaluation/concatenate_results.py"
+
 
 #
 # Plot
@@ -158,13 +179,25 @@ rule plot_lfr_performance_vs_mixing:
         output_file=FIG_LFR_PERFORMANCE_VS_MIXING,
     params:
         parameters=fig_lfr_perf_vs_mixing_paramspace.instance,
-        model_names = ["node2vec", "deepwalk", "line", "adjspec", "modspec", "leigenmap", "nonbacktracking", "bp", "infomap", "flatsbm" ],
-        with_legend = lambda wildcards: "True" if str(wildcards.k)=="5" else "False"
+        model_names=[
+            "node2vec",
+            "deepwalk",
+            "line",
+            "adjspec",
+            "modspec",
+            "leigenmap",
+            "nonbacktracking",
+            "bp",
+            "infomap",
+            "flatsbm",
+        ],
+        with_legend=lambda wildcards: "True" if str(wildcards.k) == "5" else "False",
     resources:
         mem="4G",
-        time="00:50:00"
+        time="00:50:00",
     script:
         "workflow/plot/plot-mixing-vs-performance-lfr.py"
+
 
 rule plot_lfr_performance_vs_mixing_all:
     input:
