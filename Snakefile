@@ -4,8 +4,12 @@ import itertools
 import pandas as pd
 from snakemake.utils import Paramspace
 
+
 configfile: "workflow/config.yaml"
+
+
 include: "./utils.smk"
+
 
 # ==========
 # Parameters
@@ -20,6 +24,7 @@ emb_params = {
         "deepwalk",
         "line",
         "leigenmap",
+        "adjspec",
         "modspec",
         "nonbacktracking",
     ],
@@ -39,13 +44,13 @@ com_detect_params = {
 #
 clustering_params = {
     "metric": ["cosine"],
-    "clustering": ["voronoi", "kmeans"],
+    "clustering": ["voronoi", "kmeans", "silhouette"],
 }
 
 #
 # Number of samples
 #
-N_SAMPLES = 10
+N_SAMPLES = 1
 
 #
 # Parmaters for the planted Partition models
@@ -87,7 +92,7 @@ fig_lfr_params_perf_vs_mixing = {
     "data": ["lfr"],
     "n": lfr_net_params["n"],
     "k": lfr_net_params["k"],  # Average degree
-    "tau":lfr_net_params["tau"],
+    "tau": lfr_net_params["tau"],
     "length": emb_params["window_length"],
     "dim": emb_params["dim"],
     "metric": ["cosine"],
@@ -113,44 +118,64 @@ EVAL_CONCAT_FILE = j(EVA_DIR, f"all-result.csv")
 # Data specific
 # ============
 
-FIG_PERFORMANCE_VS_MIXING_ALL = j(FIG_DIR, "all_perf_vs_mixing.pdf",)
+FIG_PERFORMANCE_VS_MIXING_ALL = j(
+    FIG_DIR,
+    "all_perf_vs_mixing.pdf",
+)
 
 
 include: "./Snakefile_multipartition_files.smk"
-
-
 include: "./Snakefile_lfr_files.smk"
+include: "./Snakefile_empirical.smk"
 
 
 # ======
 # RULES
 # ======
 
-DATA_LIST = ["multi_partition_model", "lfr"]
+DATA_LIST = ["multi_partition_model", "lfr", "empirical"]
 
 
 rule all:
     input:
+        expand(EVAL_CONCAT_FILE, data=DATA_LIST),
+        expand(FIG_PERFORMANCE_VS_MIXING, **fig_params_perf_vs_mixing),
+        expand(FIG_LFR_PERFORMANCE_VS_MIXING, **fig_lfr_params_perf_vs_mixing),
+        expand(FIG_PERFORMANCE_VS_MIXING_ALL, data=DATA_LIST),
         expand(
-            EVAL_EMB_FILE,
-            data="multi_partition_model",
-            **net_params,
-            **emb_params,
-            **clustering_params
+            FIG_EMP_PERFORMANCE,
+            data="empirical",
+            clustering=clustering_params["clustering"],
         ),
-        expand(EMB_FILE, data="multi_partition_model", **net_params, **emb_params),
+
+
+rule all_lfr:
+    input:
+        expand(EVAL_CONCAT_FILE, data=["lfr"]),
+
+
+rule all_mpm:
+    input:
+        expand(EVAL_CONCAT_FILE, data=["multi_partition_model"]),
+
+
+rule all_emp:
+    input:
+        expand(EVAL_CONCAT_FILE, data=["empirical"]),
         expand(
-            LFR_EVAL_EMB_FILE,
-            data="lfr",
-            **lfr_net_params,
-            **emb_params,
-            **clustering_params
+            FIG_EMP_PERFORMANCE,
+            data="empirical",
+            clustering=clustering_params["clustering"],
         ),
-        expand(LFR_EMB_FILE, data="lfr", **lfr_net_params, **emb_params),
 
 
 rule figs:
     input:
-        expand(FIG_PERFORMANCE_VS_MIXING, **fig_params_perf_vs_mixing), # expand(FIG_SPECTRAL_DENSITY_FILE, **bipartition_params)
+        expand(FIG_PERFORMANCE_VS_MIXING, **fig_params_perf_vs_mixing),
         expand(FIG_LFR_PERFORMANCE_VS_MIXING, **fig_lfr_params_perf_vs_mixing),
         expand(FIG_PERFORMANCE_VS_MIXING_ALL, data=DATA_LIST),
+        expand(
+            FIG_EMP_PERFORMANCE,
+            data="empirical",
+            clustering=clustering_params["clustering"],
+        ),

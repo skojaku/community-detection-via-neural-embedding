@@ -2,7 +2,7 @@
 # @Author: Sadamori Kojaku
 # @Date:   2022-08-26 09:51:23
 # @Last Modified by:   Sadamori Kojaku
-# @Last Modified time: 2023-06-15 12:02:03
+# @Last Modified time: 2023-02-19 15:33:48
 """Module for embedding."""
 # %%
 import gensim
@@ -10,7 +10,15 @@ import networkx as nx
 import numpy as np
 from scipy import sparse
 from sklearn.decomposition import TruncatedSVD
-from embcom import samplers, utils
+
+from embcom import rsvd, samplers, utils
+
+try:
+    import glove
+except ImportError:
+    print(
+        "Ignore this message if you do not use Glove. Otherwise, install glove python package by 'pip install glove_python_binary' "
+    )
 
 
 # Base class
@@ -129,7 +137,8 @@ class DeepWalk(Node2Vec):
     def __init__(self, **params):
         Node2Vec.__init__(self, **params)
         self.w2vparams = {
-            "sg": 0,
+            "sg": 1,
+            # "sg": 0,
             "hs": 1,
             "min_count": 0,
             "workers": 4,
@@ -166,6 +175,13 @@ class LaplacianEigenMap(NodeEmbeddings):
 
     def update_embedding(self, dim):
         if self.reconstruction_vector:
+            #            u, s, v = rsvd.rSVD(
+            #                self.L, dim, p=self.p, q=self.q
+            #            )  # add one for the trivial solution
+            #            sign = np.sign(np.diag(v @ u))
+            #            s = s * sign
+            #            order = np.argsort(s)[::-1]
+            #            u = u[:, order] @ np.diag(np.sqrt(np.maximum(0, s[order])))
             s, u = sparse.linalg.eigs(self.L, k=dim, which="LR")
             s, u = np.real(s), np.real(u)
             order = np.argsort(s)[::-1]
@@ -176,9 +192,30 @@ class LaplacianEigenMap(NodeEmbeddings):
             s, u = np.real(s), np.real(u)
             order = np.argsort(-s)[1:]
             s, u = s[order], u[:, order]
+            #            u, s, v = rsvd.rSVD(
+            #                self.L, dim + 1, p=self.p, q=self.q
+            #            )  # add one for the trivial solution
+            #            sign = np.sign(np.diag(v @ u))
+            #            s = s * sign
+            #            order = np.argsort(s)[::-1][1:]
+            #            u = u[:, order]
             Dsqrt = sparse.diags(1 / np.maximum(np.sqrt(self.deg), 1e-12), format="csr")
             self.in_vec = Dsqrt @ u @ sparse.diags(np.sqrt(np.abs(s)))
             self.out_vec = u
+
+    def shave_embedding(self, emb, K):
+        # Column normalize emb
+        nemb = emb / np.maximum(
+            1e-12, np.array(np.linalg.norm(emb, axis=0)).reshape(-1)
+        )
+
+        # Compute the modularity eigenvalues
+        eigvals = np.diag(nemb.T @ self.L @ nemb)
+
+        # Shave
+        order = np.argsort(-eigvals)
+        shaved_emb = emb[:, order[: (K - 1)]]
+        return shaved_emb
 
 
 class AdjacencySpectralEmbedding(NodeEmbeddings):
@@ -198,7 +235,22 @@ class AdjacencySpectralEmbedding(NodeEmbeddings):
         svd = TruncatedSVD(n_components=dim, n_iter=7, random_state=42)
         u = svd.fit_transform(self.A)
         s = svd.singular_values_
+        # u, s, v = rsvd.rSVD(self.A, dim=dim)
         self.in_vec = u @ sparse.diags(s)
+
+    def shave_embedding(self, emb, K):
+        # Column normalize emb
+        nemb = emb / np.maximum(
+            1e-12, np.array(np.linalg.norm(emb, axis=0)).reshape(-1)
+        )
+
+        # Compute the modularity eigenvalues
+        eigvals = np.diag(nemb.T @ self.A @ nemb)
+
+        # Shave
+        order = np.argsort(-eigvals)
+        shaved_emb = emb[:, order[: (K - 1)]]
+        return shaved_emb
 
 
 class ModularitySpectralEmbedding(NodeEmbeddings):
@@ -216,11 +268,8 @@ class ModularitySpectralEmbedding(NodeEmbeddings):
         return self
 
     def update_embedding(self, dim):
-        s, u = sparse.linalg.eigs(self.A, k=dim + 1, which="LR")
+        s, u = self.powerIteratedModularityEmbedding(self.A, k=dim)
         s, u = np.real(s), np.real(u)
-        s = s[1:]
-        u = u[:, 1:]
-
         if self.reconstruction_vector:
             is_positive = s > 0
             u[:, ~is_positive] = 0
@@ -229,6 +278,53 @@ class ModularitySpectralEmbedding(NodeEmbeddings):
         else:
             self.in_vec = u @ sparse.diags(np.sqrt(np.abs(s)))
         self.out_vec = u
+
+    def shave_embedding(self, emb, K):
+        # Column normalize emb
+        # nemb = emb / np.maximum(1e-12, np.linalg.norm(emb, axis=0))
+        nemb = emb / np.maximum(
+            1e-12, np.array(np.linalg.norm(emb, axis=0)).reshape(-1)
+        )
+
+        # Compute the modularity eigenvalues
+        vals = np.diag(nemb.T @ self.A @ nemb) - np.sum(
+            np.power(nemb.T @ self.deg, 2)
+        ) / np.sum(self.deg)
+
+        # Shave
+        order = np.argsort(-vals)
+        shaved_emb = emb[:, order[: (K - 1)]]
+        return shaved_emb
+
+    def powerIteratedModularityEmbedding(self, net, k, n_iter=100, eps=1e-12):
+        deg = np.array(net.sum(axis=1)).flatten()
+
+        double_m = np.sum(deg)
+
+        n_nodes = len(deg)
+        eigenvecs = np.zeros((n_nodes, k))
+        eigenvals = np.zeros(k)
+
+        for ell in range(k):
+            b = np.random.randn(len(deg))
+            b /= np.linalg.norm(b)
+            b_prev = b.copy()
+            for it in range(n_iter):
+                b = (
+                    net @ b / double_m
+                    - deg * (deg.T @ b) / double_m**2
+                    - np.einsum("ij,j->ij", eigenvecs, eigenvals) @ (eigenvecs.T @ b)
+                )
+                b /= np.linalg.norm(b)
+                if (
+                    np.mean(np.abs(b - b_prev) / np.maximum(1e-12, np.abs(b_prev)))
+                    < eps
+                ):
+                    break
+                b_prev = b.copy()
+            eigenvecs[:, ell] = b.copy()
+            eigenvals[ell] = b.T @ net @ b / double_m - (b.T @ deg) ** 2 / double_m**2
+        return eigenvals, eigenvecs
 
 
 class LinearizedNode2Vec(NodeEmbeddings):
@@ -246,14 +342,21 @@ class LinearizedNode2Vec(NodeEmbeddings):
         return self
 
     def update_embedding(self, dim):
+
         # Calculate the normalized transition matrix
         Dinvsqrt = sparse.diags(1 / np.sqrt(np.maximum(1, self.deg)))
         Psym = Dinvsqrt @ self.A @ Dinvsqrt
 
+        # svd = TruncatedSVD(n_components=dim + 1, n_iter=7, random_state=42)
+        # u = svd.fit_transform(Psym)
+        # s = svd.singular_values_
         s, u = sparse.linalg.eigs(Psym, k=dim + 1, which="LR")
         s, u = np.real(s), np.real(u)
         order = np.argsort(-s)
         s, u = s[order], u[:, order]
+
+        # u, s, v = rsvd.rSVD(Psym, dim=dim + 1, p=self.p, q=self.q)
+        # sign = np.sign(np.diag(v @ u))
 
         s = np.abs(s)
         mask = s < np.max(s)
@@ -280,7 +383,13 @@ class NonBacktrackingSpectralEmbedding(NodeEmbeddings):
         self.A = A
         return self
 
+    def shave_embedding(self, emb, K):
+        # Column normalize emb
+        shaved_emb = emb[:, : (K - 1)]
+        return shaved_emb
+
     def update_embedding(self, dim):
+
         N = self.A.shape[0]
         Z = sparse.csr_matrix((N, N))
         I = sparse.identity(N, format="csr")
@@ -288,10 +397,14 @@ class NonBacktrackingSpectralEmbedding(NodeEmbeddings):
         B = sparse.bmat([[Z, D - I], [-I, self.A]], format="csr")
 
         if self.auto_dim is False:
-            s, v = sparse.linalg.eigs(B, k=dim, tol=1e-4)
+            s, v = sparse.linalg.eigs(B, k=dim + 1, tol=1e-4)
             s, v = np.real(s), np.real(v)
+
+            self.n_estimated_clusters = np.sum(s > np.sqrt(np.max(s))) - 1
+
             order = np.argsort(-np.abs(s))
             s, v = s[order], v[:, order]
+            s, v = s[1:], v[:, 1:]
             v = v[N:, :]
 
             # Normalize the eigenvectors because we cut half the vec
@@ -306,8 +419,10 @@ class NonBacktrackingSpectralEmbedding(NodeEmbeddings):
             dim = np.minimum(dim, N - 1)
 
             s, v = sparse.linalg.eigs(B, k=dim + 1, tol=1e-4)
+            self.n_estimated_clusters = np.sum(s > np.sqrt(np.max(s))) - 1
 
-            c = int(self.A.sum() / N)
+            largest_eigenvalue = np.max(s)
+            c = np.sqrt(largest_eigenvalue)
             s, v = s[np.abs(s) > c], v[:, np.abs(s) > c]
 
             order = np.argsort(s)
@@ -316,5 +431,33 @@ class NonBacktrackingSpectralEmbedding(NodeEmbeddings):
             v = v[N:, :]
             c = np.array(np.linalg.norm(v, axis=0)).reshape(-1)
             v = v @ np.diag(1 / c)
-
         self.in_vec = v
+
+
+class Node2VecMatrixFactorization(NodeEmbeddings):
+    def __init__(self, verbose=False, window_length=10, num_blocks=500):
+        self.in_vec = None  # In-vector
+        self.out_vec = None  # Out-vector
+        self.window_length = window_length
+        self.num_blocks = num_blocks
+
+    def fit(self, net):
+        A = utils.to_adjacency_matrix(net)
+
+        self.A = A
+        self.deg = np.array(A.sum(axis=1)).reshape(-1)
+        return self
+
+    def update_embedding(self, dim):
+
+        P = utils.to_trans_mat(self.A)
+        Ppow = utils.matrix_sum_power(P, self.window_length) / self.window_length
+        stationary_prob = self.deg / np.sum(self.deg)
+        R = np.log(Ppow @ np.diag(1 / stationary_prob))
+
+        # u, s, v = rsvd.rSVD(R, dim=dim)
+        svd = TruncatedSVD(n_components=dim + 1, n_iter=7, random_state=42)
+        u = svd.fit_transform(R)
+        s = svd.singular_values_
+        self.in_vec = u @ sparse.diags(np.sqrt(s))
+        self.out_vec = None

@@ -124,6 +124,23 @@ rule kmeans_clustering_multi_partition_model:
         "workflow/community-detection/kmeans-clustering.py"
 
 
+rule silhouette_clustering_multi_partition_model:
+    input:
+        emb_file=EMB_FILE,
+        com_file=NODE_FILE,
+    output:
+        output_file=COM_DETECT_EMB_FILE,
+    params:
+        parameters=com_detect_emb_paramspace.instance,
+    wildcard_constraints:
+        clustering="silhouette",
+    resources:
+        mem="12G",
+        time="01:00:00",
+    script:
+        "workflow/community-detection/silhouette-kmeans.py"
+
+
 rule community_detection_multi_partition_model:
     input:
         net_file=NET_FILE,
@@ -168,8 +185,12 @@ rule evaluate_communities_for_embedding:
 rule concatenate_results_multipartition:
     input:
         input_files=expand(
-            EVAL_FILE, data="multi_partition_model", **net_params, **com_detect_params,
-        ) + expand(
+            EVAL_FILE,
+            data="multi_partition_model",
+            **net_params,
+            **com_detect_params,
+        )
+        + expand(
             EVAL_EMB_FILE,
             data="multi_partition_model",
             **net_params,
@@ -206,11 +227,11 @@ rule plot_performance_vs_mixing:
             "node2vec",
             "deepwalk",
             "line",
+            "adjspec",
             "modspec",
             "leigenmap",
             "nonbacktracking",
             "bp",
-            "infomap",
             "flatsbm",
         ],
         with_legend=(
@@ -223,8 +244,6 @@ rule plot_performance_vs_mixing:
         "workflow/plot/plot-mixing-vs-performance.py"
 
 
-
-
 rule plot_performance_vs_mixing_all:
     input:
         expand(FIG_PERFORMANCE_VS_MIXING, **fig_params_perf_vs_mixing),
@@ -232,4 +251,3 @@ rule plot_performance_vs_mixing_all:
         output_file=FIG_PERFORMANCE_VS_MIXING_ALL.format(data="multi_partition_model"),
     run:
         shell("pdfjam {input} --nup 3x4 --suffix 3up --outfile {output}")
-

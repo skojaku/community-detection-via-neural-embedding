@@ -52,12 +52,11 @@ params = {
 
 
 ng = lfr.NetworkGenerator()
-data = ng.generate(params)
+data = ng.generate(**params)
 
 # Load the network
 net = data["net"]
 community_table = data["community_table"]
-params = data["params"]
 seed = data["seed"]
 
 community_ids = community_table.sort_values(by="node_id")["community_id"].values.astype(
