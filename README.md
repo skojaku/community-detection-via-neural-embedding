@@ -86,22 +86,22 @@ model.fit(net)
 # : Integer
 emb = model.transform(dim=dim)
 ```
+
 Other embedding models:
 
-```python
+| Model Name                     | Description                                      |
+|-------------------------------|--------------------------------------------------|
+| node2vec                      | Node2Vec embedding                               |
+| depthfirst-node2vec           | Depth-first Node2Vec embedding                   |
+| deepwalk                      | DeepWalk embedding                               |
+| line                          | LINE embedding                                   |
+| glove                         | GloVe embedding                                  |
+| leigenmap                     | Laplacian EigenMap embedding                     |
+| adjspec                       | Adjacency Spectral Embedding                     |
+| modspec2                      | Modularity Spectral Embedding                    |
+| nonbacktracking               | Non-Backtracking Spectral Embedding              |
+| linearized-node2vec           | Linearized Node2Vec embedding                    |
 
-# DeepWalk
-model = embcom.embeddings.DeepWalk(window_length=window_length, num_walks=num_walks)
-
-# Laplacian EigenMap
-model = embcom.embeddings.LaplacianEigenMap()
-
-# Modularity spectral Embedding
-model = embcom.embeddings.ModularitySpectralEmbedding()
-
-# Non-backtracking spectral embedding
-model = embcom.embeddings.NonBacktrackingSpectralEmbedding()
-```
 
 ### Belief Propagation Algorithm
 

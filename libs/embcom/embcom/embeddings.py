@@ -253,7 +253,7 @@ class AdjacencySpectralEmbedding(NodeEmbeddings):
         return shaved_emb
 
 
-class ModularitySpectralEmbedding2(NodeEmbeddings):
+class ModularitySpectralEmbedding(NodeEmbeddings):
     def __init__(self, verbose=False, reconstruction_vector=False, p=100, q=40):
         self.in_vec = None  # In-vector
         self.out_vec = None  # Out-vector
@@ -325,84 +325,6 @@ class ModularitySpectralEmbedding2(NodeEmbeddings):
             eigenvecs[:, ell] = b.copy()
             eigenvals[ell] = b.T @ net @ b / double_m - (b.T @ deg) ** 2 / double_m**2
         return eigenvals, eigenvecs
-
-
-class ModularitySpectralEmbedding(NodeEmbeddings):
-    def __init__(self, verbose=False, reconstruction_vector=False, p=100, q=40):
-        self.in_vec = None  # In-vector
-        self.out_vec = None  # Out-vector
-        self.reconstruction_vector = reconstruction_vector
-        self.p = p
-        self.q = q
-
-    def fit(self, net):
-        A = utils.to_adjacency_matrix(net)
-        self.A = A
-        self.deg = np.array(A.sum(axis=1)).reshape(-1)
-        return self
-
-    def shave_embedding(self, emb, K):
-        # Column normalize emb
-        nemb = emb / np.maximum(
-            1e-12, np.array(np.linalg.norm(emb, axis=0)).reshape(-1)
-        )
-
-        # Compute the modularity eigenvalues
-        eigvals = np.diag(nemb.T @ self.A @ nemb) - np.sum(
-            np.power(nemb.T @ self.deg, 2)
-        ) / np.sum(self.deg)
-        # Shave
-        order = np.argsort(-eigvals)
-        shaved_emb = emb[:, order[: (K - 1)]]
-        return shaved_emb
-
-    def update_embedding(self, dim):
-
-        s, u = sparse.linalg.eigs(self.A, k=dim + 1, which="LR")
-        s, u = np.real(s), np.real(u)
-        s = s[1:]
-        u = u[:, 1:]
-
-        if self.reconstruction_vector:
-            is_positive = s > 0
-            u[:, ~is_positive] = 0
-            s[~is_positive] = 0
-            self.in_vec = u @ sparse.diags(np.sqrt(s))
-        else:
-            self.in_vec = u @ sparse.diags(np.sqrt(np.abs(s)))
-        self.out_vec = u
-
-
-class HighOrderModularitySpectralEmbedding(NodeEmbeddings):
-    def __init__(
-        self,
-        verbose=False,
-        window_length=10,
-    ):
-        self.in_vec = None  # In-vector
-        self.out_vec = None  # Out-vector
-        self.window_length = window_length
-
-    def fit(self, net):
-        A = utils.to_adjacency_matrix(net)
-        self.A = A
-        self.deg = np.array(A.sum(axis=1)).reshape(-1)
-        return self
-
-    def update_embedding(self, dim):
-        stationary_prob = self.deg / np.sum(self.deg)
-
-        P = utils.to_trans_mat(self.A)
-        Q = []
-        for t in range(self.window_length):
-            Q.append(
-                [sparse.diags(stationary_prob / self.window_length) @ P]
-                + [P for _ in range(t)]
-            )
-        Q.append([-stationary_prob.reshape((-1, 1)), stationary_prob.reshape((1, -1))])
-        u, s, v = rsvd.rSVD(Q, dim=dim)
-        self.in_vec = u @ sparse.diags(s)
-        self.out_vec = None
 
 
 class LinearizedNode2Vec(NodeEmbeddings):
@@ -539,59 +461,3 @@ class Node2VecMatrixFactorization(NodeEmbeddings):
         s = svd.singular_values_
         self.in_vec = u @ sparse.diags(np.sqrt(s))
         self.out_vec = None
-
-
-class NonBacktrackingNode2Vec(Node2Vec):
-    """A python class for the node2vec.
-
-    Parameters
-    ----------
-    num_walks : int (optional, default 10)
-        Number of walks per node
-    walk_length : int (optional, default 40)
-        Length of walks
-    window_length : int (optional, default 10)
-        Restart probability of a random walker.
-    p : node2vec parameter (TODO: Write doc)
-    q : node2vec parameter (TODO: Write doc)
-    """
-
-    def __init__(self, num_walks=10, walk_length=80, window_length=10, **params):
-        Node2Vec.__init__(
-            self,
-            num_walks=num_walks,
-            walk_length=walk_length,
-            window_length=window_length,
-            **params
-        )
-        self.sampler = samplers.NonBacktrackingWalkSampler(
-            num_walks=num_walks, walk_length=walk_length
-        )
-
-
-class NonBacktrackingDeepWalk(DeepWalk):
-    """A python class for the node2vec.
-
-    Parameters
-    ----------
-    num_walks : int (optional, default 10)
-        Number of walks per node
-    walk_length : int (optional, default 40)
-        Length of walks
-    window_length : int (optional, default 10)
-        Restart probability of a random walker.
-    p : node2vec parameter (TODO: Write doc)
-    q : node2vec parameter (TODO: Write doc)
-    """
-
-    def __init__(self, num_walks=10, walk_length=80, window_length=10, **params):
-        DeepWalk.__init__(
-            self,
-            num_walks=num_walks,
-            walk_length=walk_length,
-            window_length=window_length,
-            **params
-        )
-        self.sampler = samplers.NonBacktrackingWalkSampler(
-            num_walks=num_walks, walk_length=walk_length
-        )

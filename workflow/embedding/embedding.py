@@ -102,8 +102,6 @@ elif model_name == "adjspec":
     model = embcom.embeddings.AdjacencySpectralEmbedding()
 elif model_name == "modspec":
     model = embcom.embeddings.ModularitySpectralEmbedding()
-elif model_name == "modspec2":
-    model = embcom.embeddings.ModularitySpectralEmbedding2()
 elif model_name == "nonbacktracking":
     model = embcom.embeddings.NonBacktrackingSpectralEmbedding()
 elif model_name == "node2vec-matrixfact":

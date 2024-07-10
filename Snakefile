@@ -20,8 +20,8 @@ emb_params = {
         "deepwalk",
         "line",
         "leigenmap",
+        "adjspec",
         "modspec",
-        "modspec2",
         "nonbacktracking",
     ],
     "window_length": [10],
@@ -135,43 +135,27 @@ DATA_LIST = ["multi_partition_model", "lfr", "empirical"]
 
 rule all:
     input:
-        #
-        # Multipartition
-        #
-        expand(
-            EVAL_EMB_FILE,
-            data="multi_partition_model",
-            **net_params,
-            **emb_params,
-            **clustering_params
-        ),
-        expand(EMB_FILE, data="multi_partition_model", **net_params, **emb_params),
-        #
-        # LFR
-        #
-        expand(
-            LFR_EVAL_EMB_FILE,
-            data="lfr",
-            **lfr_net_params,
-            **emb_params,
-            **clustering_params
-        ),
-        expand(LFR_EMB_FILE, data="lfr", **lfr_net_params, **emb_params),
-        #
-        # Empirical networks
-        #
-        expand(NET_EMP_FILE,  **net_emp_params),
-        expand(EMB_EMP_FILE, **net_emp_params, **emb_params, sample = range(N_SAMPLES_EMP)),
-        expand(EVAL_EMB_EMP_FILE, **net_emp_params, **emb_params, **clustering_params, sample = range(N_SAMPLES_EMP)),
-        expand(EVAL_EMP_FILE, **net_emp_params, **clustering_params, **com_detect_params, sample = range(N_SAMPLES_EMP))
+        expand(EVAL_CONCAT_FILE, data = DATA_LIST),
+        expand(FIG_PERFORMANCE_VS_MIXING, **fig_params_perf_vs_mixing),
+        expand(FIG_LFR_PERFORMANCE_VS_MIXING, **fig_lfr_params_perf_vs_mixing),
+        expand(FIG_PERFORMANCE_VS_MIXING_ALL, data=DATA_LIST),
+        expand(FIG_EMP_PERFORMANCE, data="empirical", clustering=clustering_params["clustering"])
 
+rule all_lfr:
+    input:
+        expand(EVAL_CONCAT_FILE, data = ["lfr"])
+
+rule all_mpm:
+    input:
+        expand(EVAL_CONCAT_FILE, data = ["multi_partition_model"])
+
+rule all_emp:
+    input:
+        expand(EVAL_CONCAT_FILE, data = ["empirical"])
 
 rule figs:
     input:
         expand(FIG_PERFORMANCE_VS_MIXING, **fig_params_perf_vs_mixing),
         expand(FIG_LFR_PERFORMANCE_VS_MIXING, **fig_lfr_params_perf_vs_mixing),
         expand(FIG_PERFORMANCE_VS_MIXING_ALL, data=DATA_LIST),
-
-rule _all:
-    input:
         expand(FIG_EMP_PERFORMANCE, data="empirical", clustering=clustering_params["clustering"])
