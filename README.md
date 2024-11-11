@@ -5,7 +5,7 @@
 - [arXiv version](https://arxiv.org/abs/2306.13400)
 
 ```
-Sadamori Kojaku, Filippo Radicchi, Yong-Yeol Ahn, Santo Fortunato. "Network community detection via neural embeddings", arXiv: 2306.13400(https://arxiv.org/abs/2306.13400)
+Kojaku, Sadamori, Filippo Radicchi, Yong-Yeol Ahn, and Santo Fortunato. "Network community detection via neural embeddings." Nature Communications 15, no. 1 (2024): 9446.
 ```
 
 To cite our work, please use the following BibTeX entry:
