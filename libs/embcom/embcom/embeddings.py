@@ -11,7 +11,7 @@ import numpy as np
 from scipy import sparse
 from sklearn.decomposition import TruncatedSVD
 
-from embcom import rsvd, samplers, utils
+from embcom import samplers, utils
 
 try:
     import glove
