@@ -1,23 +1,24 @@
 # Network community detection via neural embedding
 
 ## Paper
+- [Nature Communication](https://www.nature.com/articles/s41467-024-52355-w)
 - [arXiv version](https://arxiv.org/abs/2306.13400)
-  
+
 ```
 Sadamori Kojaku, Filippo Radicchi, Yong-Yeol Ahn, Santo Fortunato. "Network community detection via neural embeddings", arXiv: 2306.13400(https://arxiv.org/abs/2306.13400)
 ```
 
 To cite our work, please use the following BibTeX entry:
 ```bibtex
-@article{KojakuNetworkCommunityNeuralEmbedding2023,
-        title        = {Network community detection via neural embeddings},
-        author       = {Sadamori Kojaku and Filippo Radicchi and Yong-Yeol Ahn and Santo Fortunato},
-        year         = 2023,
-        publisher    = {{arXiv}},
-        number       = {arXiv:2306.13400},
-        eprint       = {arXiv:2306.13400},
-        archiveprefix = {arxiv},
-        keywords     = {detectability limit},
+@article{kojaku2024network,
+  title={Network community detection via neural embeddings},
+  author={Kojaku, Sadamori and Radicchi, Filippo and Ahn, Yong-Yeol and Fortunato, Santo},
+  journal={Nature Communications},
+  volume={15},
+  number={1},
+  pages={9446},
+  year={2024},
+  publisher={Nature Publishing Group UK London}
 }
 ```
 
