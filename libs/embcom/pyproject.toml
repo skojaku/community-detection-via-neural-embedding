@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "embcom"
+version = "0.0.1"
+description = "Graph embedding methods for community detection"
+authors = [{name = "Sadamori Kojaku"}]
+requires-python = ">=3.9"
+dependencies = [
+    "numpy",
+    "scipy",
+    "scikit-learn",
+    "networkx",
+    "gensim",
+    "numba",
+    "tqdm",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
