@@ -68,7 +68,7 @@ rule generate_lfr_net:
         mem="12G",
         time="04:00:00",
     script:
-        "workflow/net_generator/generate-lfr-net.py"
+        "workflow/net_generator/generate_lfr_net.py"
 
 
 #
@@ -195,7 +195,7 @@ rule plot_lfr_performance_vs_mixing:
         mem="4G",
         time="00:50:00",
     script:
-        "workflow/plot/plot-mixing-vs-performance-lfr.py"
+        "workflow/plot/plot_mixing_vs_performance_lfr.py"
 
 
 rule plot_lfr_performance_vs_mixing_all:

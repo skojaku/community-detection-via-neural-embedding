@@ -69,7 +69,7 @@ rule generate_net_multi_partition_model:
         mem="12G",
         time="04:00:00",
     script:
-        "workflow/net_generator/generate-net-by-multi-partition-model.py"
+        "workflow/net_generator/generate_net_by_multi_partition_model.py"
 
 
 #
@@ -104,7 +104,7 @@ rule voronoi_clustering_multi_partition_model:
         mem="12G",
         time="01:00:00",
     script:
-        "workflow/community-detection/voronoi-clustering.py"
+        "workflow/community_detection/voronoi_clustering.py"
 
 
 rule kmeans_clustering_multi_partition_model:
@@ -121,7 +121,7 @@ rule kmeans_clustering_multi_partition_model:
         mem="12G",
         time="01:00:00",
     script:
-        "workflow/community-detection/kmeans-clustering.py"
+        "workflow/community_detection/kmeans_clustering.py"
 
 
 rule silhouette_clustering_multi_partition_model:
@@ -138,7 +138,7 @@ rule silhouette_clustering_multi_partition_model:
         mem="12G",
         time="01:00:00",
     script:
-        "workflow/community-detection/silhouette-kmeans.py"
+        "workflow/community_detection/silhouette_kmeans.py"
 
 
 rule community_detection_multi_partition_model:
@@ -150,7 +150,7 @@ rule community_detection_multi_partition_model:
     params:
         parameters=com_detect_paramspace.instance,
     script:
-        "workflow/community-detection/detect-community.py"
+        "workflow/community_detection/detect_community.py"
 
 
 #
@@ -166,7 +166,7 @@ rule evaluate_communities:
         mem="12G",
         time="00:10:00",
     script:
-        "workflow/evaluation/eval-com-detect-score.py"
+        "workflow/evaluation/eval_com_detect_score.py"
 
 
 rule evaluate_communities_for_embedding:
@@ -179,7 +179,7 @@ rule evaluate_communities_for_embedding:
         mem="12G",
         time="00:20:00",
     script:
-        "workflow/evaluation/eval-com-detect-score.py"
+        "workflow/evaluation/eval_com_detect_score.py"
 
 
 rule concatenate_results_multipartition:
@@ -241,7 +241,7 @@ rule plot_performance_vs_mixing:
         mem="4G",
         time="00:50:00",
     script:
-        "workflow/plot/plot-mixing-vs-performance.py"
+        "workflow/plot/plot_mixing_vs_performance.py"
 
 
 rule plot_performance_vs_mixing_all:
