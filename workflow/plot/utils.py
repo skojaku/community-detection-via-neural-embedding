@@ -1,3 +1,4 @@
+"""Plotting utilities. Canonical versions live in workflow/utils/."""
 import glob
 import pathlib
 import sys
