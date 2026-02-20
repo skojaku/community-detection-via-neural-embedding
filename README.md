@@ -26,22 +26,22 @@ To cite our work, please use the following BibTeX entry:
 
 ### Setup
 
-1. Set up the virtual environment and install the required packages:
+1. Set up the conda environment (installs graph-tool, snakemake, and Python 3.9):
 ```bash
-conda create -n neuralemb python=3.9
+mamba env create -f environment.yml
 conda activate neuralemb
-conda install -c conda-forge mamba -y
-mamba install -y -c bioconda -c conda-forge snakemake -y
-mamba install -c conda-forge graph-tool scikit-learn numpy==1.23.5 numba scipy pandas networkx seaborn matplotlib gensim ipykernel tqdm black -y
-pip install PDFknife
 ```
 
-2. Install the in-house packages
-
+2. Install Python dependencies via uv:
 ```bash
-cd libs/BeliefPropagation && python3 setup.py build && pip install -e .
-cd libs/LFR-benchmark && python3 setup.py build && pip install -e .
-cd libs/embcom && pip install -e .
+uv pip install -r requirements.txt
+```
+
+3. Install the in-house packages:
+```bash
+uv pip install -e libs/embcom
+uv pip install -e libs/BeliefPropagation
+uv pip install -e libs/LFR-benchmark
 ```
 
 4. Create a file `config.yaml` with the following content and place it under the `workflow` folder:
@@ -69,7 +69,7 @@ You can change the number of cores to use, instead of 24.
 
 We provide a package for graph embedding methods, including node2vec, DeepWalk, LINE, and some conventional graph embedding. The package can be installed using the following command:
 ```bash
-cd libs/embcom && pip install -e .
+uv pip install -e libs/embcom
 ```
 
 #### Usage

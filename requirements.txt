@@ -1,0 +1,12 @@
+scikit-learn
+numpy==1.23.5
+numba
+scipy
+pandas
+networkx
+seaborn
+matplotlib
+gensim
+tqdm
+black
+PDFknife
