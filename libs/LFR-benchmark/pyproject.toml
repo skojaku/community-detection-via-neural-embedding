@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "lfr"
+version = "0.0.1"
+description = "LFR benchmark for networks"
+authors = [{name = "Sadamori Kojaku"}]
+requires-python = ">=3.9"
+dependencies = []
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["lfr*"]

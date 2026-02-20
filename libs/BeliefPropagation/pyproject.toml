@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "belief_propagation"
+version = "0.0.1"
+description = "Python wrapper for the belief propagation community detection algorithm"
+authors = [{name = "Sadamori Kojaku"}]
+requires-python = ">=3.9"
+dependencies = []
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["belief_propagation*"]
