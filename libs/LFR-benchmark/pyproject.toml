@@ -7,7 +7,7 @@ name = "lfr"
 version = "0.0.1"
 description = "LFR benchmark for networks"
 authors = [{name = "Sadamori Kojaku"}]
-requires-python = ">=3.9"
+requires-python = ">=3.12"
 dependencies = []
 
 [tool.setuptools.packages.find]

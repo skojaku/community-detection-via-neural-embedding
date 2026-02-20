@@ -7,7 +7,7 @@ name = "belief_propagation"
 version = "0.0.1"
 description = "Python wrapper for the belief propagation community detection algorithm"
 authors = [{name = "Sadamori Kojaku"}]
-requires-python = ">=3.9"
+requires-python = ">=3.12"
 dependencies = []
 
 [tool.setuptools.packages.find]

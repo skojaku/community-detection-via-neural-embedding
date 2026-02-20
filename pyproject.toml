@@ -2,7 +2,7 @@
 name = "community-detection-via-neural-embedding"
 version = "0.1.0"
 description = "Reproducible workflow for network community detection via neural embeddings"
-requires-python = ">=3.9"
+requires-python = ">=3.12"
 
 [tool.uv]
 environments = ["environment.yml"]
