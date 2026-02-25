@@ -87,11 +87,9 @@ def _detect_by_flatsbm_subprocess(A, K):
     conda_prefix = os.environ.get(
         "CONDA_PREFIX", os.path.expanduser("~/miniforge3/envs/neuralemb")
     )
-    # If CONDA_PREFIX points to base env, use neuralemb instead
+    # If CONDA_PREFIX points to base env, use neuralemb inside it
     if "envs" not in conda_prefix:
-        conda_prefix = os.path.join(
-            os.path.dirname(conda_prefix), "envs", "neuralemb"
-        )
+        conda_prefix = os.path.join(conda_prefix, "envs", "neuralemb")
     python_bin = os.path.join(conda_prefix, "bin", "python3")
 
     with tempfile.TemporaryDirectory() as tmpdir:
