@@ -61,7 +61,10 @@ def detect_by_infomap(A, K):
 
 
 def detect_by_flatsbm(A, K):
-    import graph_tool.all as gt
+    try:
+        import graph_tool.all as gt
+    except ModuleNotFoundError:
+        return _detect_by_flatsbm_subprocess(A, K)
     r, c, v = sparse.find(A)
     g = gt.Graph(directed=False)
     g.add_edge_list(np.vstack([r, c]).T)
@@ -72,6 +75,59 @@ def detect_by_flatsbm(A, K):
     )
     b = state.get_blocks()
     return np.unique(np.array(b.a), return_inverse=True)[1]
+
+
+def _detect_by_flatsbm_subprocess(A, K):
+    """Run flatsbm detection via subprocess using the neuralemb conda env
+    where graph_tool is installed."""
+    import subprocess
+    import tempfile
+    import os
+
+    conda_prefix = os.environ.get(
+        "CONDA_PREFIX", os.path.expanduser("~/miniforge3/envs/neuralemb")
+    )
+    # If CONDA_PREFIX points to base env, use neuralemb instead
+    if "envs" not in conda_prefix:
+        conda_prefix = os.path.join(
+            os.path.dirname(conda_prefix), "envs", "neuralemb"
+        )
+    python_bin = os.path.join(conda_prefix, "bin", "python3")
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        input_file = os.path.join(tmpdir, "input.npz")
+        output_file = os.path.join(tmpdir, "output.npy")
+        sparse.save_npz(input_file, sparse.csr_matrix(A))
+
+        script = f"""
+import numpy as np
+from scipy import sparse
+import graph_tool.all as gt
+
+A = sparse.load_npz("{input_file}")
+K = {K}
+r, c, v = sparse.find(A)
+g = gt.Graph(directed=False)
+g.add_edge_list(np.vstack([r, c]).T)
+state = gt.minimize_blockmodel_dl(
+    g,
+    state_args={{"B_min": K, "B_max": K}},
+    multilevel_mcmc_args={{"B_max": K, "B_min": K}},
+)
+b = state.get_blocks()
+result = np.unique(np.array(b.a), return_inverse=True)[1]
+np.save("{output_file}", result)
+"""
+        result = subprocess.run(
+            [python_bin, "-c", script],
+            capture_output=True,
+            text=True,
+        )
+        if result.returncode != 0:
+            raise RuntimeError(
+                f"flatsbm subprocess failed:\n{result.stderr}"
+            )
+        return np.load(output_file)
 
 def detect_by_belief_propagation(A, K, memberships):
     import belief_propagation as bp
