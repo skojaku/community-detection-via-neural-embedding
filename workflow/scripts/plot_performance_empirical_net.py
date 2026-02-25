@@ -81,6 +81,11 @@ for i, (ax, network) in enumerate(zip(axes.flatten(), NETWORK_NAMES)):
     network_order = [m for m in display_name_order if m in available_in_network]
     network_df = network_df[network_df["name"].isin(network_order)].copy()
     network_df["name"] = network_df["name"].astype(str)
+    # Drop models with all-NaN scores to avoid boxplot positions mismatch
+    valid_models = network_df.groupby("name")["score"].apply(lambda s: s.notna().any())
+    valid_models = valid_models[valid_models].index.tolist()
+    network_order = [m for m in network_order if m in valid_models]
+    network_df = network_df[network_df["name"].isin(network_order)]
 
     sns.boxplot(
         data=network_df,
