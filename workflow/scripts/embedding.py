@@ -144,8 +144,13 @@ model.fit(lcc_net)
 if model_name in TORCH_MODELS:
     lcc_emb = model.transform()
 else:
-    effective_dim = max(1, min(dim, lcc_net.shape[0] - 5))
-    lcc_emb = model.transform(dim=effective_dim)
+    # TruncatedSVD needs at least 2 features; leigenmap uses dim+1 components internally,
+    # so we need lcc_net.shape[0] >= effective_dim + 2.
+    effective_dim = min(dim, lcc_net.shape[0] - 2)
+    if effective_dim < 1:
+        lcc_emb = np.zeros((n_lcc, 1))
+    else:
+        lcc_emb = model.transform(dim=effective_dim)
 
 non_lcc_node_ids = np.where(component_labels != largest_component_label)[0]
 emb = projection @ lcc_emb
