@@ -6,6 +6,18 @@ on the largest connected component, and saves the result.
 import logging
 import sys
 
+# Re-exec with the correct Python environment if embcom is not available.
+try:
+    import embcom as _embcom_check  # noqa: F401
+    del _embcom_check
+except ModuleNotFoundError:
+    import os
+
+    base = os.path.expanduser("~/miniforge3/envs")
+    neuralemb_py = os.path.join(base, "neuralemb", "bin", "python3")
+    if sys.executable != neuralemb_py and os.path.isfile(neuralemb_py):
+        os.execv(neuralemb_py, [neuralemb_py] + sys.argv)
+
 import GPUtil
 import numpy as np
 import pandas as pd
