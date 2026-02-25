@@ -4,8 +4,25 @@ channels:
   - bioconda
   - defaults
 dependencies:
-  - python=3.12
+  - python=3.9
   - graph-tool
   - igraph
   - snakemake
+  - setuptools
+  - scikit-learn
+  - numpy
+  - numba
+  - scipy
+  - pandas
+  - networkx
+  - seaborn
+  - matplotlib
+  - gensim>=4.3.3
+  - tqdm
+  - black
+  - pypdf
+  - gputil
   - pip
+  - pip:
+    - infomap
+    - PDFknife
