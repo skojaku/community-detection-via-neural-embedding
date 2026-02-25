@@ -144,7 +144,7 @@ model.fit(lcc_net)
 if model_name in TORCH_MODELS:
     lcc_emb = model.transform()
 else:
-    effective_dim = min(dim, lcc_net.shape[0] - 5)
+    effective_dim = max(1, min(dim, lcc_net.shape[0] - 5))
     lcc_emb = model.transform(dim=effective_dim)
 
 non_lcc_node_ids = np.where(component_labels != largest_component_label)[0]
