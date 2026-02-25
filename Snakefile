@@ -29,7 +29,8 @@ emb_params = {
         "nonbacktracking",
     ],
     "window_length": [10],
-    "dim": [16, 64, 128],
+    "dim": [16], # for testing
+    #"dim": [16, 64, 128],
 }
 
 #
@@ -56,11 +57,13 @@ N_SAMPLES = 1
 # Parmaters for the planted Partition models
 #
 net_params = {
-    "n": [500],  # Network size
+    "n": [500],  # Network size: for testing
     #"n": [10000, 100000],  # Network size
     "q": [2, 50],  # Number of communities
-    "cave": [5, 10, 50],  # average degree
-    "mu": ["%.2f" % d for d in np.linspace(0.1, 1, 19)],
+    "cave": [5],  # average degree # for testing
+    #"cave": [5, 10, 50],  # average degree
+    "mu": ["%.2f" % d for d in np.linspace(0.1, 1, 5)], # for testing
+    #"mu": ["%.2f" % d for d in np.linspace(0.1, 1, 19)],
     "sample": np.arange(N_SAMPLES),  # Number of samples
 }
 
@@ -68,13 +71,15 @@ net_params = {
 # Parmaters for the LFR benchmark
 #
 lfr_net_params = {
-    "n": [500],  # Network size
+    "n": [500],  # Network size # for testing
     #"n": [10000],  # Network size
-    "k": [5, 10, 50],  # Average degree
+    "k": [5],  # Average degree: for testing
+    #"k": [5, 10, 50],  # Average degree
     "tau": [3],  # degree exponent
     "tau2": [1],  # community size exponent
     "minc": [50],  # min community size
-    "mu": ["%.2f" % d for d in np.linspace(0.1, 1, 19)],
+    "mu": ["%.2f" % d for d in np.linspace(0.1, 1, 5)], # for testing
+    #"mu": ["%.2f" % d for d in np.linspace(0.1, 1, 19)],
     "sample": np.arange(N_SAMPLES),  # Number of samples
 }
 

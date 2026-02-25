@@ -5,4 +5,3 @@ description = "Reproducible workflow for network community detection via neural 
 requires-python = ">=3.12"
 
 [tool.uv]
-environments = ["environment.yml"]

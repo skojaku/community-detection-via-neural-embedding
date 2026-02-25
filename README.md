@@ -26,22 +26,25 @@ To cite our work, please use the following BibTeX entry:
 
 ### Setup
 
-1. Set up the conda environment (installs graph-tool, snakemake, and Python 3.9):
+1. Set up the conda environment (installs graph-tool, snakemake, and Python 3.12):
 ```bash
 mamba env create -f environment.yml
 conda activate neuralemb
 ```
 
 2. Install Python dependencies via uv:
+
+**Important:** Use `--python "$CONDA_PREFIX/bin/python"` to ensure packages are installed into the active conda environment (not into a `.venv` that `uv` may auto-detect elsewhere).
 ```bash
-uv pip install -r requirements.txt
+uv pip install --python "$CONDA_PREFIX/bin/python" setuptools
+uv pip install --python "$CONDA_PREFIX/bin/python" --no-build-isolation -r requirements.txt
 ```
 
 3. Install the in-house packages:
 ```bash
-uv pip install -e libs/embcom
-uv pip install -e libs/BeliefPropagation
-uv pip install -e libs/LFR-benchmark
+uv pip install --python "$CONDA_PREFIX/bin/python" -e libs/embcom
+uv pip install --python "$CONDA_PREFIX/bin/python" -e libs/BeliefPropagation
+uv pip install --python "$CONDA_PREFIX/bin/python" -e libs/LFR-benchmark
 ```
 
 4. Create a file `config.yaml` with the following content and place it under the `workflow` folder:
@@ -69,7 +72,7 @@ You can change the number of cores to use, instead of 24.
 
 We provide a package for graph embedding methods, including node2vec, DeepWalk, LINE, and some conventional graph embedding. The package can be installed using the following command:
 ```bash
-uv pip install -e libs/embcom
+uv pip install --python "$CONDA_PREFIX/bin/python" -e libs/embcom
 ```
 
 #### Usage
@@ -121,4 +124,4 @@ We have developed a Python wrapper for the belief propagation method. See [this 
 
 ### LFR benchmark
 
-We used the original code for the LFR network models,w ith [our Python wrapper](https://github.com/skojaku/LFR-benchmark).
+We used the original code for the LFR network models, with [our Python wrapper](https://github.com/skojaku/LFR-benchmark).
