@@ -1,9 +1,7 @@
-"""Generate networks using a planted-partition (stochastic block) model.
-
-Uses a pure numpy/scipy implementation; no graph_tool dependency required.
-"""
+"""Generate networks using a planted-partition (stochastic block) model."""
 import sys
 
+import igraph as ig
 import numpy as np
 import pandas as pd
 from scipy import sparse
@@ -27,16 +25,14 @@ else:
 
 
 def generate_network(n_nodes, n_communities, avg_degree, mixing_rate):
-    """Generate a planted-partition model network using a pure numpy/scipy SBM.
+    """Generate a planted-partition model network using igraph's SBM.
 
     Nodes are assigned to communities in round-robin order, then an SBM is
     sampled with in-community and cross-community edge probabilities set by
     the desired average degree and mixing rate.
     """
     memberships = np.sort(np.arange(n_nodes) % n_communities)
-
-    # Compute community sizes
-    community_sizes = np.bincount(memberships, minlength=n_communities).astype(float)
+    community_sizes = np.bincount(memberships, minlength=n_communities).tolist()
 
     # Derive in-community and cross-community connection probabilities
     avg_degree_out = np.maximum(1, mixing_rate * avg_degree)
@@ -44,45 +40,25 @@ def generate_network(n_nodes, n_communities, avg_degree, mixing_rate):
     prob_out = avg_degree_out / n_nodes
     prob_in = avg_degree_in / n_nodes
 
-    # Block probability matrix: prob_out everywhere, boosted to prob_in on diagonal
     block_probs = np.full((n_communities, n_communities), prob_out)
     np.fill_diagonal(block_probs, prob_in)
 
-    # Sample edges for each pair of communities
-    rows, cols = [], []
-    for r in range(n_communities):
-        nodes_r = np.where(memberships == r)[0]
-        for c in range(r, n_communities):
-            nodes_c = np.where(memberships == c)[0]
-            p = block_probs[r, c]
-            if r == c:
-                # Upper triangle only to avoid duplicates, then symmetrize
-                n_r = len(nodes_r)
-                pairs = n_r * (n_r - 1) // 2
-                edges = np.random.binomial(pairs, p)
-                if edges > 0:
-                    idx = np.random.choice(pairs, size=edges, replace=False)
-                    tri_r, tri_c = np.triu_indices(n_r, k=1)
-                    src = nodes_r[tri_r[idx]]
-                    dst = nodes_c[tri_c[idx]]
-                    rows.extend(np.concatenate([src, dst]))
-                    cols.extend(np.concatenate([dst, src]))
-            else:
-                pairs = len(nodes_r) * len(nodes_c)
-                edges = np.random.binomial(pairs, p)
-                if edges > 0:
-                    idx = np.random.choice(pairs, size=edges, replace=False)
-                    src = nodes_r[idx // len(nodes_c)]
-                    dst = nodes_c[idx % len(nodes_c)]
-                    rows.extend(np.concatenate([src, dst]))
-                    cols.extend(np.concatenate([dst, src]))
+    g = ig.Graph.SBM(
+        n=n_nodes,
+        pref_matrix=block_probs.tolist(),
+        block_sizes=community_sizes,
+        directed=False,
+        loops=False,
+    )
 
-    rows = np.array(rows, dtype=np.int32)
-    cols = np.array(cols, dtype=np.int32)
-    data = np.ones(len(rows), dtype=np.float32)
-    adj_matrix = sparse.csr_matrix((data, (rows, cols)), shape=(n_nodes, n_nodes))
-    # Binarize (remove duplicate edges)
-    adj_matrix.data = np.ones_like(adj_matrix.data)
+    edges = np.array(g.get_edgelist(), dtype=np.int32)
+    if len(edges) == 0:
+        adj_matrix = sparse.csr_matrix((n_nodes, n_nodes), dtype=np.float32)
+    else:
+        rows = np.concatenate([edges[:, 0], edges[:, 1]])
+        cols = np.concatenate([edges[:, 1], edges[:, 0]])
+        data = np.ones(len(rows), dtype=np.float32)
+        adj_matrix = sparse.csr_matrix((data, (rows, cols)), shape=(n_nodes, n_nodes))
 
     return adj_matrix, memberships
 

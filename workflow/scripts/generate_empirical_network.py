@@ -104,30 +104,28 @@ def load_highschool():
     url = "https://networks.skewed.de/net/sp_high_school_new/files/2011.csv.zip"
     with urllib.request.urlopen(url) as resp:
         z = zipfile.ZipFile(io.BytesIO(resp.read()))
-    # The contact list: columns t, i, j, Ci, Cj
-    contacts = pd.read_csv(
+    # edges.csv: source, target, time (0-indexed node ids, comma-separated)
+    edges = pd.read_csv(
         io.StringIO(z.read("edges.csv").decode()),
         comment="#",
         header=None,
-        names=["t", "i", "j", "Ci", "Cj"],
-        sep=r"\s+",
+        names=["source", "target", "time"],
     )
-    # Build node-to-class mapping from contact data
-    node_class = pd.concat(
-        [contacts[["i", "Ci"]].rename(columns={"i": "node", "Ci": "class"}),
-         contacts[["j", "Cj"]].rename(columns={"j": "node", "Cj": "class"})]
-    ).drop_duplicates("node").sort_values("node").reset_index(drop=True)
-    unique_nodes, new_ids = np.unique(node_class["node"].values, return_inverse=True)
-    id_map = dict(zip(unique_nodes, range(len(unique_nodes))))
-    n_nodes = len(unique_nodes)
-    src = contacts["i"].map(id_map).values
-    trg = contacts["j"].map(id_map).values
+    # nodes.csv: index, id, class, gender, _pos
+    nodes = pd.read_csv(
+        io.StringIO(z.read("nodes.csv").decode()),
+        comment="#",
+        header=None,
+        names=["index", "id", "class", "gender", "_pos"],
+    )
+    src, trg = edges["source"].values, edges["target"].values
+    n_nodes = len(nodes)
     adj = sparse.csr_matrix(
         (np.ones(len(src)), (src, trg)), shape=(n_nodes, n_nodes)
     )
     adj = adj + adj.T
     adj.data = np.ones(adj.nnz)
-    labels = np.unique(node_class["class"].values, return_inverse=True)[1]
+    labels = np.unique(nodes["class"].values, return_inverse=True)[1]
     return adj, labels
 
 

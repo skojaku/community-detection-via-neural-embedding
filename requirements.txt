@@ -14,3 +14,4 @@ PDFknife
 pypdf
 GPUtil
 infomap
+igraph
