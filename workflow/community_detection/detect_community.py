@@ -13,7 +13,6 @@
 # %%
 import sys
 
-import graph_tool.all as gt
 import infomap
 import numpy as np
 import pandas as pd
@@ -63,6 +62,7 @@ def detect_by_infomap(A, K):
 
 
 def detect_by_flatsbm(A, K):
+    import graph_tool.all as gt
     r, c, v = sparse.find(A)
     g = gt.Graph(directed=False)
     g.add_edge_list(np.vstack([r, c]).T)
