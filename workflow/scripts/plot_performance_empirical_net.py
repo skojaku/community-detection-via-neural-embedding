@@ -81,7 +81,8 @@ for i, (ax, network) in enumerate(zip(axes.flatten(), NETWORK_NAMES)):
 
     available_in_network = set(network_df["name"].dropna().unique())
     network_order = [m for m in display_name_order if m in available_in_network]
-    network_df = network_df[network_df["name"].isin(network_order)]
+    network_df = network_df[network_df["name"].isin(network_order)].copy()
+    network_df["name"] = network_df["name"].astype(str)
 
     sns.boxplot(
         data=network_df,
