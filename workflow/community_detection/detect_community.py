@@ -17,7 +17,6 @@ import numpy as np
 import pandas as pd
 from scipy import sparse
 from scipy.sparse.csgraph import connected_components
-import belief_propagation as bp
 
 if "snakemake" in sys.modules:
     netfile = snakemake.input["net_file"]
@@ -75,6 +74,7 @@ def detect_by_flatsbm(A, K):
     return np.unique(np.array(b.a), return_inverse=True)[1]
 
 def detect_by_belief_propagation(A, K, memberships):
+    import belief_propagation as bp
     return bp.detect(A, q=int(K), init_memberships = memberships)
 
 
