@@ -24,47 +24,7 @@ To cite our work, please use the following BibTeX entry:
 
 ## Reproducing Our Results
 
-### Setup
-
-1. Set up the conda environment (installs graph-tool, snakemake, and Python 3.12):
-```bash
-mamba env create -f environment.yml
-conda activate neuralemb
-```
-
-2. Install Python dependencies via uv:
-
-**Important:** Use `--python "$CONDA_PREFIX/bin/python"` to ensure packages are installed into the active conda environment (not into a `.venv` that `uv` may auto-detect elsewhere).
-```bash
-uv pip install --python "$CONDA_PREFIX/bin/python" setuptools
-uv pip install --python "$CONDA_PREFIX/bin/python" --no-build-isolation -r requirements.txt
-```
-
-3. Install the in-house packages:
-```bash
-uv pip install --python "$CONDA_PREFIX/bin/python" -e libs/embcom
-uv pip install --python "$CONDA_PREFIX/bin/python" -e libs/BeliefPropagation
-uv pip install --python "$CONDA_PREFIX/bin/python" -e libs/LFR-benchmark
-```
-
-4. Create a file `config.yaml` with the following content and place it under the `workflow` folder:
-```yaml
-data_dir: "data/"
-```
-
-Note that the script will generate over 1T byte of data under this `data/` folder. Make sure you have sufficient disk space.
-
-### Run Simulation
-
-Run the following command to execute the `Snakemake` workflow:
-```bash
-snakemake --cores 24 all
-```
-This will generate all files needed to produce the figures. Then, run
-```bash
-snakemake --cores 24 figs
-```
-You can change the number of cores to use, instead of 24.
+See [REPRODUCING.md](REPRODUCING.md) for full setup instructions, how to run the pipeline, and a detailed description of how the code is organized and executed.
 
 ## About the Code
 

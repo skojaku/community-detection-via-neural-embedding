@@ -66,7 +66,7 @@ rule generate_empirical_net:
         mem="4G",
         time="00:30:00",
     script:
-        "workflow/net_generator/generate_empirical_network.py"
+        "../scripts/generate_empirical_network.py"
 
 
 use rule embedding_multi_partition_model as embedding_empirical with:
@@ -161,7 +161,7 @@ rule concatenate_results_empirical:
         mem="4G",
         time="00:30:00",
     script:
-        "workflow/evaluation/concatenate_results.py"
+        "../scripts/concatenate_results.py"
 
 
 rule plot_empirical_performance:
@@ -186,7 +186,7 @@ rule plot_empirical_performance:
         mem="4G",
         time="00:30:00",
     script:
-        "workflow/plot/plot_performance_empirical_net.py"
+        "../scripts/plot_performance_empirical_net.py"
 
 
 rule plot_empirical_performance_all:
@@ -195,4 +195,4 @@ rule plot_empirical_performance_all:
     output:
         output_file=FIG_PERFORMANCE_VS_MIXING_ALL.format(data="empirical"),
     run:
-        shell("python workflow/utils/pdf_nup.py {input} --nup 1x3 --outfile {output}")
+        shell("python workflow/scripts/pdf_nup.py {input} --nup 1x3 --outfile {output}")
