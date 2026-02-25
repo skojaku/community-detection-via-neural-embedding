@@ -12,11 +12,13 @@ try:
     del _embcom_check
 except ModuleNotFoundError:
     import os
+    import subprocess
 
     base = os.path.expanduser("~/miniforge3/envs")
     neuralemb_py = os.path.join(base, "neuralemb", "bin", "python3")
     if sys.executable != neuralemb_py and os.path.isfile(neuralemb_py):
-        os.execv(neuralemb_py, [neuralemb_py] + sys.argv)
+        result = subprocess.run([neuralemb_py] + sys.argv)
+        sys.exit(result.returncode)
 
 import GPUtil
 import numpy as np
