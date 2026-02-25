@@ -36,20 +36,38 @@ def _contiguous_labels(labels):
     return np.unique(labels, return_inverse=True)[1]
 
 
-def _get_conda_python_bin():
-    """Resolve the Python binary inside the neuralemb conda environment.
+def _get_conda_python_bin(package=None):
+    """Resolve a Python binary that has *package* importable.
 
-    Used by subprocess fallbacks when an optional dependency (infomap,
-    graph_tool) is not importable in the current interpreter.
+    Searches conda environments under ~/miniforge3/envs for one where the
+    requested package can be imported.  Falls back to the neuralemb env (the
+    original default) when no match is found or no package is specified.
     """
     import os
+    import subprocess
 
-    conda_prefix = os.environ.get(
-        "CONDA_PREFIX", os.path.expanduser("~/miniforge3/envs/neuralemb")
-    )
-    if "envs" not in conda_prefix:
-        conda_prefix = os.path.join(conda_prefix, "envs", "neuralemb")
-    return os.path.join(conda_prefix, "bin", "python3")
+    base = os.path.expanduser("~/miniforge3/envs")
+    default = os.path.join(base, "neuralemb", "bin", "python3")
+
+    if package is None:
+        return default
+
+    for env in os.listdir(base):
+        py = os.path.join(base, env, "bin", "python3")
+        if not os.path.isfile(py):
+            continue
+        try:
+            r = subprocess.run(
+                [py, "-c", f"import {package}"],
+                capture_output=True,
+                timeout=10,
+            )
+            if r.returncode == 0:
+                return py
+        except Exception:
+            continue
+
+    return default
 
 
 # ============================================================
@@ -81,7 +99,7 @@ def _detect_by_infomap_subprocess(adj, num_communities):
     import subprocess
     import tempfile
 
-    python_bin = _get_conda_python_bin()
+    python_bin = _get_conda_python_bin(package="infomap")
 
     with tempfile.TemporaryDirectory() as tmpdir:
         input_path = os.path.join(tmpdir, "input.npz")
@@ -141,7 +159,7 @@ def _detect_by_flatsbm_subprocess(adj, num_communities):
     import subprocess
     import tempfile
 
-    python_bin = _get_conda_python_bin()
+    python_bin = _get_conda_python_bin(package="graph_tool")
 
     with tempfile.TemporaryDirectory() as tmpdir:
         input_path = os.path.join(tmpdir, "input.npz")
