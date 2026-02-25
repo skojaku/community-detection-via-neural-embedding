@@ -13,7 +13,6 @@
 # %%
 import sys
 
-import infomap
 import numpy as np
 import pandas as pd
 from scipy import sparse
@@ -49,6 +48,7 @@ K = len(set(memberships))
 # Communiyt detection
 #
 def detect_by_infomap(A, K):
+    import infomap
     r, c, v = sparse.find(A + A.T)
     im = infomap.Infomap("--two-level --directed")
     for i in range(len(r)):
