@@ -1,10 +1,5 @@
 # -*- coding: utf-8 -*-
-# @Author: Sadamori Kojaku
-# @Date:   2022-07-11 22:08:08
-# @Last Modified by:   Sadamori Kojaku
-# @Last Modified time: 2023-05-09 15:12:14
 import seaborn as sns
-import matplotlib.pyplot as plt
 
 
 def get_model_order():
@@ -51,23 +46,21 @@ def get_model_names():
 
 
 def get_model_colors():
-    cmap = sns.color_palette().as_hex()
-    bcmap = sns.color_palette().as_hex()
-    mcmap = sns.color_palette("colorblind").as_hex()
+    palette = sns.color_palette().as_hex()
 
-    neural_emb_color = bcmap[3]
-    spec_emb_color = bcmap[0]
-    com_color = bcmap[1]
-    neural_emb_color_2 = bcmap[2]
+    base_neural = palette[3]
+    base_spectral = palette[0]
+    base_neural_alt = palette[2]
+
     return {
         "node2vec": "red",
-        "deepwalk": sns.desaturate(neural_emb_color, 0.8),
-        "line": sns.desaturate(neural_emb_color, 0.2),
-        "linearized-node2vec": spec_emb_color,
-        "torch-modularity": neural_emb_color_2,
-        "torch-laplacian-eigenmap": sns.desaturate(neural_emb_color_2, 0.2),
-        "adjspec": sns.desaturate(spec_emb_color, 0.8),
-        "modspec": sns.desaturate(spec_emb_color, 0.2),
+        "deepwalk": sns.desaturate(base_neural, 0.8),
+        "line": sns.desaturate(base_neural, 0.2),
+        "linearized-node2vec": base_spectral,
+        "torch-modularity": base_neural_alt,
+        "torch-laplacian-eigenmap": sns.desaturate(base_neural_alt, 0.2),
+        "adjspec": sns.desaturate(base_spectral, 0.8),
+        "modspec": sns.desaturate(base_spectral, 0.2),
         "leigenmap": "#c2c1f1",
         "bp": "k",
         "infomap": "#8d8d8d",
@@ -75,29 +68,28 @@ def get_model_colors():
         "nonbacktracking": "blue",
         "non-backtracking-node2vec": "red",
         "non-backtracking-deepwalk": "blue",
-        "depthfirst-node2vec": sns.desaturate(neural_emb_color, 0.1),
+        "depthfirst-node2vec": sns.desaturate(base_neural, 0.1),
     }
 
 
 def get_model_edge_colors():
-    white_color = "white"
     return {
         "node2vec": "black",
-        "deepwalk": white_color,
-        "line": white_color,
+        "deepwalk": "white",
+        "line": "white",
         "torch-modularity": "black",
         "torch-laplacian-eigenmap": "black",
         "linearized-node2vec": "black",
-        "adjspec": white_color,
+        "adjspec": "white",
         "modspec": "k",
         "leigenmap": "k",
         "bp": "k",
         "nonbacktracking": "black",
-        "non-backtracking-node2vec": white_color,
-        "non-backtracking-deepwalk": white_color,
+        "non-backtracking-node2vec": "white",
+        "non-backtracking-deepwalk": "white",
         "infomap": "k",
         "flatsbm": "k",
-        "depthfirst-node2vec": white_color,
+        "depthfirst-node2vec": "white",
     }
 
 

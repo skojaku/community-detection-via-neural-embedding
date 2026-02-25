@@ -8,7 +8,7 @@ from snakemake.utils import Paramspace
 configfile: "workflow/config.yaml"
 
 
-include: "./utils.smk"
+include: "workflow/rules/common.smk"
 
 
 # ==========
@@ -131,9 +131,9 @@ FIG_PERFORMANCE_VS_MIXING_ALL = j(
 )
 
 
-include: "./Snakefile_multipartition_files.smk"
-include: "./Snakefile_lfr_files.smk"
-include: "./Snakefile_empirical.smk"
+include: "workflow/rules/multipartition.smk"
+include: "workflow/rules/lfr.smk"
+include: "workflow/rules/empirical.smk"
 
 
 # ======
