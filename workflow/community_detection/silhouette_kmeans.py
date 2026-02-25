@@ -5,13 +5,11 @@ import sys
 from sklearn.metrics import silhouette_score
 import numpy as np
 import pandas as pd
-from scipy import sparse, stats
 from sklearn.metrics import normalized_mutual_info_score
 
 if "snakemake" in sys.modules:
     emb_file = snakemake.input["emb_file"]
     com_file = snakemake.input["com_file"]
-    net_file = snakemake.input["net_file"]
     output_file = snakemake.output["output_file"]
     params = snakemake.params["parameters"]
     metric = params["metric"]
@@ -21,7 +19,6 @@ if "snakemake" in sys.modules:
 else:
     emb_file = "../../data/empirical/embedding/netdata~cora_model_name~node2vec_window_length~10_dim~64~sample~0.npz"
     com_file = "../../data/empirical/networks/node_netdata~cora.npz"
-    net_file = "../../data/empirical/networks/net_netdata~cora.npz"
     model_name = "leigenmap"
     output_file = "unko"
     metric = "cosine"
@@ -51,8 +48,6 @@ memberships = pd.read_csv(com_file)["membership"].values.astype(int)
 
 emb = np.nan_to_num(emb)
 
-
-A = sparse.load_npz(net_file)
 
 # Determine the optimal number of clusters K using silhouette score
 silhouette_scores = []
