@@ -77,9 +77,9 @@ n_cols = len(NETWORK_NAMES) // 2
 fig, axes = plt.subplots(figsize=(20, 10), nrows=2, ncols=n_cols)
 
 for i, (ax, network) in enumerate(zip(axes.flatten(), NETWORK_NAMES)):
-    network_df = df.query("netdata == @network")
+    network_df = df.query("netdata == @network").dropna(subset=["name"])
 
-    available_in_network = set(network_df["name"].dropna().unique())
+    available_in_network = set(network_df["name"].unique())
     network_order = [m for m in display_name_order if m in available_in_network]
 
     sns.boxplot(
@@ -112,10 +112,12 @@ for i, (ax, network) in enumerate(zip(axes.flatten(), NETWORK_NAMES)):
 
     # Only show x-axis labels on the bottom row
     if i < n_cols:
-        ax.set_xticklabels([])
+        ax.set_xticklabels([""] * len(ax.get_xticklabels()))
     else:
+        labels = [t.get_text() for t in ax.get_xticklabels()]
+        ax.set_xticks(ax.get_xticks())
         ax.set_xticklabels(
-            ax.get_xticklabels(),
+            labels,
             rotation=45,
             ha="right",
             rotation_mode="anchor",
