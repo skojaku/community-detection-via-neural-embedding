@@ -79,11 +79,14 @@ fig, axes = plt.subplots(figsize=(20, 10), nrows=2, ncols=n_cols)
 for i, (ax, network) in enumerate(zip(axes.flatten(), NETWORK_NAMES)):
     network_df = df.query("netdata == @network")
 
+    available_in_network = set(network_df["name"].dropna().unique())
+    network_order = [m for m in display_name_order if m in available_in_network]
+
     sns.boxplot(
         data=network_df,
         x="name",
         y="score",
-        order=display_name_order,
+        order=network_order,
         color="#fdfdfd",
         ax=ax,
     )
@@ -91,7 +94,7 @@ for i, (ax, network) in enumerate(zip(axes.flatten(), NETWORK_NAMES)):
         data=network_df,
         x="name",
         y="score",
-        order=display_name_order,
+        order=network_order,
         ax=ax,
         palette=display_color_palette,
         edgecolor="k",
