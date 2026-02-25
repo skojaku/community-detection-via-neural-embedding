@@ -7,9 +7,9 @@ import color_palette as cp
 import sys
 
 if "snakemake" in sys.modules:
-    result_file = snakemake.input["result_file"]
+    result_file = snakemake.input["input_file"]
     output_file = snakemake.output["output_file"]
-    focal_clustering = snakemake.params["clustering"]
+    focal_clustering = snakemake.wildcards.clustering
 else:
     result_file = "../../data/empirical/evaluations/all-result.csv"
     focal_clustering = "silhouette"
