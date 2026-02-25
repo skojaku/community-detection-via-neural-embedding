@@ -58,14 +58,12 @@ all_model_order = cp.get_model_order()
 available_models = df["name"].unique().tolist()
 model_order = [m for m in all_model_order if m in available_models]
 
-df["name"] = pd.Categorical(df["name"], categories=model_order, ordered=True)
-
 model_colors = cp.get_model_colors()
 model_names = cp.get_model_names()
 
 # Map internal model keys to human-readable display names
 df["name"] = df["name"].map(model_names)
-display_name_order = [model_names[m] for m in FOCAL_METHODS]
+display_name_order = [model_names[m] for m in model_order if m in model_names]
 display_color_palette = {model_names[k]: v for k, v in model_colors.items()}
 
 # --- Plotting ---
