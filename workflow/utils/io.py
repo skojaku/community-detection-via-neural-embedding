@@ -62,6 +62,8 @@ def to_numeric(df, to_int, to_float):
     -------
     pd.DataFrame
     """
-    df = df.astype({k: float for k in to_int + to_float}, errors="ignore")
-    df = df.astype({k: int for k in to_int}, errors="ignore")
+    existing_float = [k for k in to_int + to_float if k in df.columns]
+    existing_int = [k for k in to_int if k in df.columns]
+    df = df.astype({k: float for k in existing_float}, errors="ignore")
+    df = df.astype({k: int for k in existing_int}, errors="ignore")
     return df
