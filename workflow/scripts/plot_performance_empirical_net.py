@@ -82,7 +82,7 @@ for i, (ax, network) in enumerate(zip(axes.flatten(), NETWORK_NAMES)):
     available_in_network = set(network_df["name"].dropna().unique())
     network_order = [m for m in display_name_order if m in available_in_network]
     network_df = network_df[network_df["name"].isin(network_order)].copy()
-    network_df["name"] = network_df["name"].astype(str)
+    network_df["name"] = pd.Categorical(network_df["name"].astype(str), categories=network_order, ordered=True)
 
     sns.boxplot(
         data=network_df,
@@ -114,6 +114,7 @@ for i, (ax, network) in enumerate(zip(axes.flatten(), NETWORK_NAMES)):
 
     # Only show x-axis labels on the bottom row
     if i < n_cols:
+        ax.set_xticks(ax.get_xticks())
         ax.set_xticklabels([""] * len(ax.get_xticklabels()))
     else:
         labels = [t.get_text() for t in ax.get_xticklabels()]
