@@ -108,12 +108,30 @@ def load_highschool():
 
 @get_largest_component
 def load_polbooks():
-    import graph_tool.all as gt
-    g = gt.collection.ns["polbooks"]
-    labels = vertex_property_to_labels(g, "value")
-    adj = graph_tool_to_sparse(g)
+    import io, zipfile, urllib.request
+    url = "https://netzschleuder.skewed.de/net/polbooks/files/polbooks.csv.zip"
+    with urllib.request.urlopen(url) as resp:
+        z = zipfile.ZipFile(io.BytesIO(resp.read()))
+    edges = pd.read_csv(
+        io.StringIO(z.read("edges.csv").decode()),
+        comment="#",
+        header=None,
+        names=["source", "target"],
+    )
+    nodes = pd.read_csv(
+        io.StringIO(z.read("nodes.csv").decode()),
+        comment="#",
+        header=None,
+        names=["index", "label", "value", "_pos"],
+    )
+    src, trg = edges["source"].values, edges["target"].values
+    n_nodes = len(nodes)
+    adj = sparse.csr_matrix(
+        (np.ones(len(src)), (src, trg)), shape=(n_nodes, n_nodes)
+    )
     adj = adj + adj.T
     adj.data = np.ones(adj.nnz)
+    labels = np.unique(nodes["value"].values, return_inverse=True)[1]
     return adj, labels
 
 

@@ -1,7 +1,6 @@
 """Generate networks using a planted-partition (stochastic block) model."""
 import sys
 
-import graph_tool.all as gt
 import numpy as np
 import pandas as pd
 from scipy import sparse
@@ -31,6 +30,7 @@ def generate_network(n_nodes, n_communities, avg_degree, mixing_rate):
     sampled with in-community and cross-community edge probabilities set by
     the desired average degree and mixing rate.
     """
+    import graph_tool.all as gt
     memberships = np.sort(np.arange(n_nodes) % n_communities)
 
     # Compute community sizes
