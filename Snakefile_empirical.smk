@@ -195,4 +195,4 @@ rule plot_empirical_performance_all:
     output:
         output_file=FIG_PERFORMANCE_VS_MIXING_ALL.format(data="empirical"),
     run:
-        shell("pdfjam {input} --nup 1x3 --suffix 1up --outfile {output}")
+        shell("python workflow/utils/pdf_nup.py {input} --nup 1x3 --outfile {output}")

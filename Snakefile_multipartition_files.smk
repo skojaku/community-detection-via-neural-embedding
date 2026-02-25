@@ -250,4 +250,4 @@ rule plot_performance_vs_mixing_all:
     output:
         output_file=FIG_PERFORMANCE_VS_MIXING_ALL.format(data="multi_partition_model"),
     run:
-        shell("pdfjam {input} --nup 3x4 --suffix 3up --outfile {output}")
+        shell("python workflow/utils/pdf_nup.py {input} --nup 3x4 --outfile {output}")

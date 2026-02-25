@@ -11,5 +11,6 @@ gensim>=4.3.3
 tqdm
 black
 PDFknife
+pypdf
 GPUtil
 infomap
