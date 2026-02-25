@@ -91,7 +91,12 @@ emb_raw = np.nan_to_num(emb_raw.copy(order="C").astype(np.float32))
 memberships = pd.read_csv(com_file)["membership"].values.astype(int)
 
 # Select optimal K via silhouette score over K = 2..20
-K = find_best_k(emb_raw, range(2, 21))
+n_samples = emb_raw.shape[0]
+if n_samples < 2:
+    K = 1
+else:
+    k_max = min(20, n_samples - 1)
+    K = find_best_k(emb_raw, range(2, k_max + 1)) if k_max >= 2 else 1
 
 # For spectral models, truncate to at most K-1 meaningful dimensions
 if model_name in SPECTRAL_MODELS:
