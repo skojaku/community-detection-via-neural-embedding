@@ -47,7 +47,10 @@ K = len(set(memberships))
 # Communiyt detection
 #
 def detect_by_infomap(A, K):
-    import infomap
+    try:
+        import infomap
+    except ModuleNotFoundError:
+        return _detect_by_infomap_subprocess(A, K)
     r, c, v = sparse.find(A + A.T)
     im = infomap.Infomap("--two-level --directed")
     for i in range(len(r)):
@@ -58,6 +61,56 @@ def detect_by_infomap(A, K):
         if node.is_leaf:
             cids[node.node_id] = node.module_id
     return np.unique(cids, return_inverse=True)[1]
+
+
+def _detect_by_infomap_subprocess(A, K):
+    """Run infomap detection via subprocess using the neuralemb conda env
+    where infomap is installed."""
+    import subprocess
+    import tempfile
+    import os
+
+    conda_prefix = os.environ.get(
+        "CONDA_PREFIX", os.path.expanduser("~/miniforge3/envs/neuralemb")
+    )
+    # If CONDA_PREFIX points to base env, use neuralemb inside it
+    if "envs" not in conda_prefix:
+        conda_prefix = os.path.join(conda_prefix, "envs", "neuralemb")
+    python_bin = os.path.join(conda_prefix, "bin", "python3")
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        input_file = os.path.join(tmpdir, "input.npz")
+        output_file = os.path.join(tmpdir, "output.npy")
+        sparse.save_npz(input_file, sparse.csr_matrix(A))
+
+        script = f"""
+import numpy as np
+from scipy import sparse
+import infomap
+
+A = sparse.load_npz("{input_file}")
+r, c, v = sparse.find(A + A.T)
+im = infomap.Infomap("--two-level --directed")
+for i in range(len(r)):
+    im.add_link(r[i], c[i], 1)
+im.run()
+cids = np.zeros(A.shape[0])
+for node in im.tree:
+    if node.is_leaf:
+        cids[node.node_id] = node.module_id
+result = np.unique(cids, return_inverse=True)[1]
+np.save("{output_file}", result)
+"""
+        result = subprocess.run(
+            [python_bin, "-c", script],
+            capture_output=True,
+            text=True,
+        )
+        if result.returncode != 0:
+            raise RuntimeError(
+                f"infomap subprocess failed:\n{result.stderr}"
+            )
+        return np.load(output_file)
 
 
 def detect_by_flatsbm(A, K):
