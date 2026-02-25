@@ -82,7 +82,6 @@ TORCH_PARAMS = dict(
 )
 
 MODEL_REGISTRY = {
-    "levy-word2vec": (embcom.embeddings.LevyWord2Vec, WALK_PARAMS),
     "node2vec": (embcom.embeddings.Node2Vec, WALK_PARAMS),
     "depthfirst-node2vec": (
         embcom.embeddings.Node2Vec,
@@ -93,7 +92,6 @@ MODEL_REGISTRY = {
         embcom.embeddings.Node2Vec,
         {"window_length": 1, "num_walks": num_walks * 10, "p": 1, "q": 1},
     ),
-    "glove": (embcom.embeddings.Glove, WALK_PARAMS),
     "leigenmap": (embcom.embeddings.LaplacianEigenMap, {}),
     "adjspec": (embcom.embeddings.AdjacencySpectralEmbedding, {}),
     "modspec": (embcom.embeddings.ModularitySpectralEmbedding, {}),
@@ -105,25 +103,9 @@ MODEL_REGISTRY = {
         embcom.embeddings.Node2VecMatrixFactorization,
         {"window_length": window_length, "blocking_membership": None},
     ),
-    "highorder-modspec": (
-        embcom.embeddings.HighOrderModularitySpectralEmbedding,
-        {"window_length": window_length},
-    ),
     "linearized-node2vec": (
         embcom.embeddings.LinearizedNode2Vec,
         {"window_length": window_length},
-    ),
-    "non-backtracking-node2vec": (
-        embcom.embeddings.NonBacktrackingNode2Vec,
-        WALK_PARAMS,
-    ),
-    "non-backtracking-deepwalk": (
-        embcom.embeddings.NonBacktrackingDeepWalk,
-        WALK_PARAMS,
-    ),
-    "non-backtracking-glove": (
-        embcom.embeddings.NonBacktrackingGlove,
-        WALK_PARAMS,
     ),
 }
 

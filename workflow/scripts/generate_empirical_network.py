@@ -4,7 +4,6 @@ import sys
 import numpy as np
 import pandas as pd
 from scipy import sparse
-import graph_tool.all as gt
 
 
 def get_largest_component(func):
@@ -88,6 +87,7 @@ def load_polblog():
 
 @get_largest_component
 def load_football():
+    import graph_tool.all as gt
     g = gt.collection.ns["football"]
     labels = np.array(g.vp["value"].get_array())
     adj = graph_tool_to_sparse(g)
@@ -98,6 +98,7 @@ def load_football():
 
 @get_largest_component
 def load_highschool():
+    import graph_tool.all as gt
     g = gt.collection.ns["sp_high_school_new/2011"]
     labels = vertex_property_to_labels(g, "class")
     adj = graph_tool_to_sparse(g)
@@ -107,6 +108,7 @@ def load_highschool():
 
 @get_largest_component
 def load_polbooks():
+    import graph_tool.all as gt
     g = gt.collection.ns["polbooks"]
     labels = vertex_property_to_labels(g, "value")
     adj = graph_tool_to_sparse(g)
@@ -152,6 +154,7 @@ def load_cora():
 
 @get_largest_component
 def load_karate():
+    import graph_tool.all as gt
     g = gt.collection.ns["karate/77"]
     labels = vertex_property_to_labels(g, "groups")
     adj = graph_tool_to_sparse(g)
