@@ -6,6 +6,20 @@ on the largest connected component, and saves the result.
 import logging
 import sys
 
+# Re-exec with the correct Python environment if embcom is not available.
+try:
+    import embcom as _embcom_check  # noqa: F401
+    del _embcom_check
+except ModuleNotFoundError:
+    import os
+    import subprocess
+
+    base = os.path.expanduser("~/miniforge3/envs")
+    neuralemb_py = os.path.join(base, "neuralemb", "bin", "python3")
+    if sys.executable != neuralemb_py and os.path.isfile(neuralemb_py):
+        result = subprocess.run([neuralemb_py] + sys.argv)
+        sys.exit(result.returncode)
+
 import GPUtil
 import numpy as np
 import pandas as pd
@@ -82,7 +96,6 @@ TORCH_PARAMS = dict(
 )
 
 MODEL_REGISTRY = {
-    "levy-word2vec": (embcom.embeddings.LevyWord2Vec, WALK_PARAMS),
     "node2vec": (embcom.embeddings.Node2Vec, WALK_PARAMS),
     "depthfirst-node2vec": (
         embcom.embeddings.Node2Vec,
@@ -93,7 +106,6 @@ MODEL_REGISTRY = {
         embcom.embeddings.Node2Vec,
         {"window_length": 1, "num_walks": num_walks * 10, "p": 1, "q": 1},
     ),
-    "glove": (embcom.embeddings.Glove, WALK_PARAMS),
     "leigenmap": (embcom.embeddings.LaplacianEigenMap, {}),
     "adjspec": (embcom.embeddings.AdjacencySpectralEmbedding, {}),
     "modspec": (embcom.embeddings.ModularitySpectralEmbedding, {}),
@@ -105,25 +117,9 @@ MODEL_REGISTRY = {
         embcom.embeddings.Node2VecMatrixFactorization,
         {"window_length": window_length, "blocking_membership": None},
     ),
-    "highorder-modspec": (
-        embcom.embeddings.HighOrderModularitySpectralEmbedding,
-        {"window_length": window_length},
-    ),
     "linearized-node2vec": (
         embcom.embeddings.LinearizedNode2Vec,
         {"window_length": window_length},
-    ),
-    "non-backtracking-node2vec": (
-        embcom.embeddings.NonBacktrackingNode2Vec,
-        WALK_PARAMS,
-    ),
-    "non-backtracking-deepwalk": (
-        embcom.embeddings.NonBacktrackingDeepWalk,
-        WALK_PARAMS,
-    ),
-    "non-backtracking-glove": (
-        embcom.embeddings.NonBacktrackingGlove,
-        WALK_PARAMS,
     ),
 }
 
@@ -162,8 +158,13 @@ model.fit(lcc_net)
 if model_name in TORCH_MODELS:
     lcc_emb = model.transform()
 else:
-    effective_dim = min(dim, lcc_net.shape[0] - 5)
-    lcc_emb = model.transform(dim=effective_dim)
+    # TruncatedSVD needs at least 2 features; leigenmap uses dim+1 components internally,
+    # so we need lcc_net.shape[0] >= effective_dim + 2.
+    effective_dim = min(dim, lcc_net.shape[0] - 2)
+    if effective_dim < 1:
+        lcc_emb = np.zeros((n_lcc, 1))
+    else:
+        lcc_emb = model.transform(dim=effective_dim)
 
 non_lcc_node_ids = np.where(component_labels != largest_component_label)[0]
 emb = projection @ lcc_emb

@@ -1,7 +1,7 @@
 """Generate networks using a planted-partition (stochastic block) model."""
 import sys
 
-import graph_tool.all as gt
+import igraph as ig
 import numpy as np
 import pandas as pd
 from scipy import sparse
@@ -25,16 +25,14 @@ else:
 
 
 def generate_network(n_nodes, n_communities, avg_degree, mixing_rate):
-    """Generate a planted-partition model network using graph-tool's SBM generator.
+    """Generate a planted-partition model network using igraph's SBM.
 
     Nodes are assigned to communities in round-robin order, then an SBM is
     sampled with in-community and cross-community edge probabilities set by
     the desired average degree and mixing rate.
     """
     memberships = np.sort(np.arange(n_nodes) % n_communities)
-
-    # Compute community sizes
-    community_sizes = np.bincount(memberships, minlength=n_communities).astype(float)
+    community_sizes = np.bincount(memberships, minlength=n_communities).tolist()
 
     # Derive in-community and cross-community connection probabilities
     avg_degree_out = np.maximum(1, mixing_rate * avg_degree)
@@ -42,23 +40,23 @@ def generate_network(n_nodes, n_communities, avg_degree, mixing_rate):
     prob_out = avg_degree_out / n_nodes
     prob_in = avg_degree_in / n_nodes
 
-    # Block probability matrix: prob_out everywhere, boosted to prob_in on diagonal
     block_probs = np.full((n_communities, n_communities), prob_out)
     np.fill_diagonal(block_probs, prob_in)
 
-    # Scale by community sizes to get expected edge counts between blocks
-    edge_count_matrix = np.diag(community_sizes) @ block_probs @ np.diag(community_sizes)
-
-    g = gt.generate_sbm(
-        b=memberships,
-        probs=edge_count_matrix,
-        micro_degs=False,
-        in_degs=np.full(n_nodes, avg_degree),
-        out_degs=np.full(n_nodes, avg_degree),
+    g = ig.Graph.SBM(
+        pref_matrix=block_probs.tolist(),
+        block_sizes=community_sizes,
+        directed=False,
     )
 
-    adj_matrix = gt.adjacency(g).T
-    adj_matrix.data = np.ones_like(adj_matrix.data)  # binarize edge weights
+    edges = np.array(g.get_edgelist(), dtype=np.int32)
+    if len(edges) == 0:
+        adj_matrix = sparse.csr_matrix((n_nodes, n_nodes), dtype=np.float32)
+    else:
+        rows = np.concatenate([edges[:, 0], edges[:, 1]])
+        cols = np.concatenate([edges[:, 1], edges[:, 0]])
+        data = np.ones(len(rows), dtype=np.float32)
+        adj_matrix = sparse.csr_matrix((data, (rows, cols)), shape=(n_nodes, n_nodes))
 
     return adj_matrix, memberships
 

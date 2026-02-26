@@ -4,7 +4,6 @@ import sys
 import numpy as np
 import pandas as pd
 from scipy import sparse
-import graph_tool.all as gt
 
 
 def get_largest_component(func):
@@ -24,22 +23,6 @@ def get_largest_component(func):
         return net, community_labels
 
     return wrapper
-
-
-def graph_tool_to_sparse(g):
-    """Convert a graph-tool Graph to a scipy sparse adjacency matrix."""
-    edges = g.get_edges()
-    n_nodes = g.num_vertices()
-    return sparse.csr_matrix(
-        (np.ones(g.num_edges()), (edges[:, 0], edges[:, 1])),
-        shape=(n_nodes, n_nodes),
-    )
-
-
-def vertex_property_to_labels(g, prop_name):
-    """Extract vertex property values and map them to consecutive integer labels."""
-    raw_labels = [g.vp[prop_name][v] for v in g.vertices()]
-    return np.unique(raw_labels, return_inverse=True)[1]
 
 
 # --- Loader functions ---
@@ -88,30 +71,90 @@ def load_polblog():
 
 @get_largest_component
 def load_football():
-    g = gt.collection.ns["football"]
-    labels = np.array(g.vp["value"].get_array())
-    adj = graph_tool_to_sparse(g)
+    import io, zipfile, urllib.request
+    url = "https://networks.skewed.de/net/football/files/football.csv.zip"
+    with urllib.request.urlopen(url) as resp:
+        z = zipfile.ZipFile(io.BytesIO(resp.read()))
+    edges = pd.read_csv(
+        io.StringIO(z.read("edges.csv").decode()),
+        comment="#",
+        header=None,
+        names=["source", "target"],
+    )
+    nodes = pd.read_csv(
+        io.StringIO(z.read("nodes.csv").decode()),
+        comment="#",
+        header=None,
+        names=["index", "label", "value", "_pos"],
+    )
+    src, trg = edges["source"].values, edges["target"].values
+    n_nodes = len(nodes)
+    adj = sparse.csr_matrix(
+        (np.ones(len(src)), (src, trg)), shape=(n_nodes, n_nodes)
+    )
     adj = adj + adj.T
     adj.data = np.ones(adj.nnz)
+    labels = np.unique(nodes["value"].values, return_inverse=True)[1]
     return adj, labels
 
 
 @get_largest_component
 def load_highschool():
-    g = gt.collection.ns["sp_high_school_new/2011"]
-    labels = vertex_property_to_labels(g, "class")
-    adj = graph_tool_to_sparse(g)
+    import io, zipfile, urllib.request
+    url = "https://networks.skewed.de/net/sp_high_school_new/files/2011.csv.zip"
+    with urllib.request.urlopen(url) as resp:
+        z = zipfile.ZipFile(io.BytesIO(resp.read()))
+    # edges.csv: source, target, time (0-indexed node ids, comma-separated)
+    edges = pd.read_csv(
+        io.StringIO(z.read("edges.csv").decode()),
+        comment="#",
+        header=None,
+        names=["source", "target", "time"],
+    )
+    # nodes.csv: index, id, class, gender, _pos
+    nodes = pd.read_csv(
+        io.StringIO(z.read("nodes.csv").decode()),
+        comment="#",
+        header=None,
+        names=["index", "id", "class", "gender", "_pos"],
+    )
+    src, trg = edges["source"].values, edges["target"].values
+    n_nodes = len(nodes)
+    adj = sparse.csr_matrix(
+        (np.ones(len(src)), (src, trg)), shape=(n_nodes, n_nodes)
+    )
     adj = adj + adj.T
+    adj.data = np.ones(adj.nnz)
+    labels = np.unique(nodes["class"].values, return_inverse=True)[1]
     return adj, labels
 
 
 @get_largest_component
 def load_polbooks():
-    g = gt.collection.ns["polbooks"]
-    labels = vertex_property_to_labels(g, "value")
-    adj = graph_tool_to_sparse(g)
+    import io, zipfile, urllib.request
+    url = "https://netzschleuder.skewed.de/net/polbooks/files/polbooks.csv.zip"
+    with urllib.request.urlopen(url) as resp:
+        z = zipfile.ZipFile(io.BytesIO(resp.read()))
+    edges = pd.read_csv(
+        io.StringIO(z.read("edges.csv").decode()),
+        comment="#",
+        header=None,
+        names=["source", "target"],
+    )
+    nodes = pd.read_csv(
+        io.StringIO(z.read("nodes.csv").decode()),
+        comment="#",
+        header=None,
+        names=["index", "label", "value", "_pos"],
+    )
+    src, trg = edges["source"].values, edges["target"].values
+    n_nodes = len(nodes)
+    adj = sparse.csr_matrix(
+        (np.ones(len(src)), (src, trg)), shape=(n_nodes, n_nodes)
+    )
     adj = adj + adj.T
     adj.data = np.ones(adj.nnz)
+    labels = np.unique(nodes["value"].values, return_inverse=True)[1]
     return adj, labels
 
 
@@ -152,9 +195,28 @@ def load_cora():
 
 @get_largest_component
 def load_karate():
-    g = gt.collection.ns["karate/77"]
-    labels = vertex_property_to_labels(g, "groups")
-    adj = graph_tool_to_sparse(g)
+    import io, zipfile, urllib.request
+    url = "https://networks.skewed.de/net/karate/files/77.csv.zip"
+    with urllib.request.urlopen(url) as resp:
+        z = zipfile.ZipFile(io.BytesIO(resp.read()))
+    edges = pd.read_csv(
+        io.StringIO(z.read("edges.csv").decode()),
+        comment="#",
+        header=None,
+        names=["source", "target"],
+    )
+    nodes = pd.read_csv(
+        io.StringIO(z.read("nodes.csv").decode()),
+        comment="#",
+        header=None,
+    )
+    # The "groups" property is in the last meaningful column
+    src, trg = edges["source"].values, edges["target"].values
+    n_nodes = len(nodes)
+    adj = sparse.csr_matrix(
+        (np.ones(len(src)), (src, trg)), shape=(n_nodes, n_nodes)
+    )
+    labels = np.unique(nodes.iloc[:, -1].values, return_inverse=True)[1]
     return adj, labels
 
 

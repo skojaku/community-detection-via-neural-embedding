@@ -2,25 +2,17 @@
 
 ## Setup
 
-1. Set up the conda environment (installs graph-tool, snakemake, and Python 3.12):
+1. Create and activate the conda environment:
 ```bash
 mamba env create -f environment.yml
 conda activate neuralemb
 ```
 
-2. Install Python dependencies via uv:
-
-**Important:** Use `--python "$CONDA_PREFIX/bin/python"` to ensure packages are installed into the active conda environment (not into a `.venv` that `uv` may auto-detect elsewhere).
+2. Install the in-house packages:
 ```bash
-uv pip install --python "$CONDA_PREFIX/bin/python" setuptools
-uv pip install --python "$CONDA_PREFIX/bin/python" --no-build-isolation -r requirements.txt
-```
-
-3. Install the in-house packages:
-```bash
-uv pip install --python "$CONDA_PREFIX/bin/python" -e libs/embcom
-uv pip install --python "$CONDA_PREFIX/bin/python" -e libs/BeliefPropagation
-uv pip install --python "$CONDA_PREFIX/bin/python" -e libs/LFR-benchmark
+pip install -e libs/embcom
+pip install -e libs/BeliefPropagation
+pip install -e libs/LFR-benchmark
 ```
 
 4. Create `workflow/config.yaml`:
@@ -112,7 +104,7 @@ Three datasets are supported:
 
 | Dataset | Rule file | Script | Description |
 |---|---|---|---|
-| `multi_partition_model` | `rules/multipartition.smk` | `generate_net_by_multi_partition_model.py` | Synthetic networks via planted partition model (graph-tool) |
+| `multi_partition_model` | `rules/multipartition.smk` | `generate_net_by_multi_partition_model.py` | Synthetic networks via planted partition model (igraph) |
 | `lfr` | `rules/lfr.smk` | `generate_lfr_net.py` | Synthetic networks via LFR benchmark |
 | `empirical` | `rules/empirical.smk` | `generate_empirical_network.py` | Real-world networks (polblog, airport, football, polbooks, cora, highschool) |
 

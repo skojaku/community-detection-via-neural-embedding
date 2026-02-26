@@ -58,14 +58,12 @@ all_model_order = cp.get_model_order()
 available_models = df["name"].unique().tolist()
 model_order = [m for m in all_model_order if m in available_models]
 
-df["name"] = pd.Categorical(df["name"], categories=model_order, ordered=True)
-
 model_colors = cp.get_model_colors()
 model_names = cp.get_model_names()
 
 # Map internal model keys to human-readable display names
 df["name"] = df["name"].map(model_names)
-display_name_order = [model_names[m] for m in FOCAL_METHODS]
+display_name_order = [model_names[m] for m in model_order if m in model_names]
 display_color_palette = {model_names[k]: v for k, v in model_colors.items()}
 
 # --- Plotting ---
@@ -77,13 +75,23 @@ n_cols = len(NETWORK_NAMES) // 2
 fig, axes = plt.subplots(figsize=(20, 10), nrows=2, ncols=n_cols)
 
 for i, (ax, network) in enumerate(zip(axes.flatten(), NETWORK_NAMES)):
-    network_df = df.query("netdata == @network")
+    network_df = df.query("netdata == @network").dropna(subset=["name"])
+
+    available_in_network = set(network_df["name"].dropna().unique())
+    network_order = [m for m in display_name_order if m in available_in_network]
+    network_df = network_df[network_df["name"].isin(network_order)].copy()
+    network_df["name"] = network_df["name"].astype(str)
+    # Drop models with all-NaN scores to avoid boxplot positions mismatch
+    valid_models = network_df.groupby("name")["score"].apply(lambda s: s.notna().any())
+    valid_models = valid_models[valid_models].index.tolist()
+    network_order = [m for m in network_order if m in valid_models]
+    network_df = network_df[network_df["name"].isin(network_order)]
 
     sns.boxplot(
         data=network_df,
         x="name",
         y="score",
-        order=display_name_order,
+        order=network_order,
         color="#fdfdfd",
         ax=ax,
     )
@@ -91,9 +99,12 @@ for i, (ax, network) in enumerate(zip(axes.flatten(), NETWORK_NAMES)):
         data=network_df,
         x="name",
         y="score",
-        order=display_name_order,
-        ax=ax,
+        order=network_order,
+        hue="name",
+        hue_order=network_order,
         palette=display_color_palette,
+        legend=False,
+        ax=ax,
         edgecolor="k",
         linewidth=1,
         s=8,
@@ -104,15 +115,15 @@ for i, (ax, network) in enumerate(zip(axes.flatten(), NETWORK_NAMES)):
     ax.set_xlabel("")
     ax.set_ylabel("")
 
-    if i == 0:
-        ax.legend().remove()
-
     # Only show x-axis labels on the bottom row
     if i < n_cols:
-        ax.set_xticklabels([])
+        ax.set_xticks(ax.get_xticks())
+        ax.set_xticklabels([""] * len(ax.get_xticklabels()))
     else:
+        labels = [t.get_text() for t in ax.get_xticklabels()]
+        ax.set_xticks(ax.get_xticks())
         ax.set_xticklabels(
-            ax.get_xticklabels(),
+            labels,
             rotation=45,
             ha="right",
             rotation_mode="anchor",

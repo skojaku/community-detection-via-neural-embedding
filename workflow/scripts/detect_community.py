@@ -36,31 +36,12 @@ def _contiguous_labels(labels):
     return np.unique(labels, return_inverse=True)[1]
 
 
-def _get_conda_python_bin():
-    """Resolve the Python binary inside the neuralemb conda environment.
-
-    Used by subprocess fallbacks when an optional dependency (infomap,
-    graph_tool) is not importable in the current interpreter.
-    """
-    import os
-
-    conda_prefix = os.environ.get(
-        "CONDA_PREFIX", os.path.expanduser("~/miniforge3/envs/neuralemb")
-    )
-    if "envs" not in conda_prefix:
-        conda_prefix = os.path.join(conda_prefix, "envs", "neuralemb")
-    return os.path.join(conda_prefix, "bin", "python3")
-
-
 # ============================================================
 # Community detection algorithms
 # ============================================================
 def detect_by_infomap(adj, num_communities):
     """Detect communities using Infomap."""
-    try:
-        import infomap
-    except ModuleNotFoundError:
-        return _detect_by_infomap_subprocess(adj, num_communities)
+    import infomap
 
     rows, cols, _ = sparse.find(adj + adj.T)
     im = infomap.Infomap("--two-level --directed")
@@ -75,53 +56,9 @@ def detect_by_infomap(adj, num_communities):
     return _contiguous_labels(community_ids)
 
 
-def _detect_by_infomap_subprocess(adj, num_communities):
-    """Run Infomap via subprocess when the infomap package is unavailable."""
-    import os
-    import subprocess
-    import tempfile
-
-    python_bin = _get_conda_python_bin()
-
-    with tempfile.TemporaryDirectory() as tmpdir:
-        input_path = os.path.join(tmpdir, "input.npz")
-        output_path = os.path.join(tmpdir, "output.npy")
-        sparse.save_npz(input_path, sparse.csr_matrix(adj))
-
-        script = f"""
-import numpy as np
-from scipy import sparse
-import infomap
-
-A = sparse.load_npz("{input_path}")
-r, c, v = sparse.find(A + A.T)
-im = infomap.Infomap("--two-level --directed")
-for i in range(len(r)):
-    im.add_link(r[i], c[i], 1)
-im.run()
-cids = np.zeros(A.shape[0])
-for node in im.tree:
-    if node.is_leaf:
-        cids[node.node_id] = node.module_id
-result = np.unique(cids, return_inverse=True)[1]
-np.save("{output_path}", result)
-"""
-        result = subprocess.run(
-            [python_bin, "-c", script],
-            capture_output=True,
-            text=True,
-        )
-        if result.returncode != 0:
-            raise RuntimeError(f"infomap subprocess failed:\n{result.stderr}")
-        return np.load(output_path)
-
-
 def detect_by_flatsbm(adj, num_communities):
     """Detect communities using a degree-corrected flat SBM (graph-tool)."""
-    try:
-        import graph_tool.all as gt
-    except ModuleNotFoundError:
-        return _detect_by_flatsbm_subprocess(adj, num_communities)
+    import graph_tool.all as gt
 
     rows, cols, _ = sparse.find(adj)
     graph = gt.Graph(directed=False)
@@ -133,48 +70,6 @@ def detect_by_flatsbm(adj, num_communities):
     )
     blocks = state.get_blocks()
     return _contiguous_labels(np.array(blocks.a))
-
-
-def _detect_by_flatsbm_subprocess(adj, num_communities):
-    """Run flat SBM via subprocess when graph_tool is unavailable."""
-    import os
-    import subprocess
-    import tempfile
-
-    python_bin = _get_conda_python_bin()
-
-    with tempfile.TemporaryDirectory() as tmpdir:
-        input_path = os.path.join(tmpdir, "input.npz")
-        output_path = os.path.join(tmpdir, "output.npy")
-        sparse.save_npz(input_path, sparse.csr_matrix(adj))
-
-        script = f"""
-import numpy as np
-from scipy import sparse
-import graph_tool.all as gt
-
-A = sparse.load_npz("{input_path}")
-K = {num_communities}
-r, c, v = sparse.find(A)
-g = gt.Graph(directed=False)
-g.add_edge_list(np.vstack([r, c]).T)
-state = gt.minimize_blockmodel_dl(
-    g,
-    state_args={{"B_min": K, "B_max": K}},
-    multilevel_mcmc_args={{"B_max": K, "B_min": K}},
-)
-b = state.get_blocks()
-result = np.unique(np.array(b.a), return_inverse=True)[1]
-np.save("{output_path}", result)
-"""
-        result = subprocess.run(
-            [python_bin, "-c", script],
-            capture_output=True,
-            text=True,
-        )
-        if result.returncode != 0:
-            raise RuntimeError(f"flatsbm subprocess failed:\n{result.stderr}")
-        return np.load(output_path)
 
 
 def detect_by_belief_propagation(adj, num_communities, memberships):
