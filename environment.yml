@@ -6,7 +6,7 @@ channels:
 dependencies:
   - python=3.9
   - graph-tool
-  - igraph
+  - python-igraph
   - snakemake
   - setuptools
   - scikit-learn

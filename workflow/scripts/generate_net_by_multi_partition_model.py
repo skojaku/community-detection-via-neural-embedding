@@ -44,11 +44,9 @@ def generate_network(n_nodes, n_communities, avg_degree, mixing_rate):
     np.fill_diagonal(block_probs, prob_in)
 
     g = ig.Graph.SBM(
-        n=n_nodes,
         pref_matrix=block_probs.tolist(),
         block_sizes=community_sizes,
         directed=False,
-        loops=False,
     )
 
     edges = np.array(g.get_edgelist(), dtype=np.int32)
