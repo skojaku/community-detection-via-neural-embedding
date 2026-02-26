@@ -68,7 +68,7 @@ rule generate_lfr_net:
         mem="12G",
         time="04:00:00",
     script:
-        "workflow/net_generator/generate-lfr-net.py"
+        "../scripts/generate_lfr_net.py"
 
 
 #
@@ -166,7 +166,7 @@ rule concatenate_results_lfr:
         to_int=["n", "k", "tau", "tau2", "minc", "dim", "sample", "length", "dim"],
         to_float=["mu", "tau"],
     script:
-        "workflow/evaluation/concatenate_results.py"
+        "../scripts/concatenate_results.py"
 
 
 #
@@ -195,7 +195,7 @@ rule plot_lfr_performance_vs_mixing:
         mem="4G",
         time="00:50:00",
     script:
-        "workflow/plot/plot-mixing-vs-performance-lfr.py"
+        "../scripts/plot_mixing_vs_performance_lfr.py"
 
 
 rule plot_lfr_performance_vs_mixing_all:
@@ -204,4 +204,4 @@ rule plot_lfr_performance_vs_mixing_all:
     output:
         output_file=FIG_PERFORMANCE_VS_MIXING_ALL.format(data="lfr"),
     run:
-        shell("pdfjam {input} --nup 3x4 --suffix 3up --outfile {output}")
+        shell("python workflow/scripts/pdf_nup.py {input} --nup 3x4 --outfile {output}")

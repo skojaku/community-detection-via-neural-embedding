@@ -24,44 +24,7 @@ To cite our work, please use the following BibTeX entry:
 
 ## Reproducing Our Results
 
-### Setup
-
-1. Set up the virtual environment and install the required packages:
-```bash
-conda create -n neuralemb python=3.9
-conda activate neuralemb
-conda install -c conda-forge mamba -y
-mamba install -y -c bioconda -c conda-forge snakemake -y
-mamba install -c conda-forge graph-tool scikit-learn numpy==1.23.5 numba scipy pandas networkx seaborn matplotlib gensim ipykernel tqdm black -y
-pip install PDFknife
-```
-
-2. Install the in-house packages
-
-```bash
-cd libs/BeliefPropagation && python3 setup.py build && pip install -e .
-cd libs/LFR-benchmark && python3 setup.py build && pip install -e .
-cd libs/embcom && pip install -e .
-```
-
-4. Create a file `config.yaml` with the following content and place it under the `workflow` folder:
-```yaml
-data_dir: "data/"
-```
-
-Note that the script will generate over 1T byte of data under this `data/` folder. Make sure you have sufficient disk space.
-
-### Run Simulation
-
-Run the following command to execute the `Snakemake` workflow:
-```bash
-snakemake --cores 24 all
-```
-This will generate all files needed to produce the figures. Then, run
-```bash
-snakemake --cores 24 figs
-```
-You can change the number of cores to use, instead of 24.
+See [REPRODUCING.md](REPRODUCING.md) for full setup instructions, how to run the pipeline, and a detailed description of how the code is organized and executed.
 
 ## About the Code
 
@@ -69,7 +32,7 @@ You can change the number of cores to use, instead of 24.
 
 We provide a package for graph embedding methods, including node2vec, DeepWalk, LINE, and some conventional graph embedding. The package can be installed using the following command:
 ```bash
-cd libs/embcom && pip install -e .
+uv pip install --python "$CONDA_PREFIX/bin/python" -e libs/embcom
 ```
 
 #### Usage
@@ -121,4 +84,4 @@ We have developed a Python wrapper for the belief propagation method. See [this 
 
 ### LFR benchmark
 
-We used the original code for the LFR network models,w ith [our Python wrapper](https://github.com/skojaku/LFR-benchmark).
+We used the original code for the LFR network models, with [our Python wrapper](https://github.com/skojaku/LFR-benchmark).

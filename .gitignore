@@ -18,6 +18,7 @@ supp.pdf
 *.csv
 *.tsv
 *.txt
+!requirements.txt
 
 # Office files
 *.docx

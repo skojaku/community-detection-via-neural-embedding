@@ -1,0 +1,28 @@
+name: neuralemb
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - python=3.9
+  - graph-tool
+  - python-igraph
+  - snakemake
+  - setuptools
+  - scikit-learn
+  - numpy
+  - numba
+  - scipy
+  - pandas
+  - networkx
+  - seaborn
+  - matplotlib
+  - gensim>=4.3.3
+  - tqdm
+  - black
+  - pypdf
+  - gputil
+  - pip
+  - pip:
+    - infomap
+    - PDFknife

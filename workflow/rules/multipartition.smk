@@ -69,7 +69,7 @@ rule generate_net_multi_partition_model:
         mem="12G",
         time="04:00:00",
     script:
-        "workflow/net_generator/generate-net-by-multi-partition-model.py"
+        "../scripts/generate_net_by_multi_partition_model.py"
 
 
 #
@@ -84,7 +84,7 @@ rule embedding_multi_partition_model:
     params:
         parameters=emb_paramspace.instance,
     script:
-        "workflow/embedding/embedding.py"
+        "../scripts/embedding.py"
 
 
 #
@@ -104,7 +104,7 @@ rule voronoi_clustering_multi_partition_model:
         mem="12G",
         time="01:00:00",
     script:
-        "workflow/community-detection/voronoi-clustering.py"
+        "../scripts/voronoi_clustering.py"
 
 
 rule kmeans_clustering_multi_partition_model:
@@ -121,7 +121,7 @@ rule kmeans_clustering_multi_partition_model:
         mem="12G",
         time="01:00:00",
     script:
-        "workflow/community-detection/kmeans-clustering.py"
+        "../scripts/kmeans_clustering.py"
 
 
 rule silhouette_clustering_multi_partition_model:
@@ -138,7 +138,7 @@ rule silhouette_clustering_multi_partition_model:
         mem="12G",
         time="01:00:00",
     script:
-        "workflow/community-detection/silhouette-kmeans.py"
+        "../scripts/silhouette_kmeans.py"
 
 
 rule community_detection_multi_partition_model:
@@ -150,7 +150,7 @@ rule community_detection_multi_partition_model:
     params:
         parameters=com_detect_paramspace.instance,
     script:
-        "workflow/community-detection/detect-community.py"
+        "../scripts/detect_community.py"
 
 
 #
@@ -166,7 +166,7 @@ rule evaluate_communities:
         mem="12G",
         time="00:10:00",
     script:
-        "workflow/evaluation/eval-com-detect-score.py"
+        "../scripts/eval_com_detect_score.py"
 
 
 rule evaluate_communities_for_embedding:
@@ -179,7 +179,7 @@ rule evaluate_communities_for_embedding:
         mem="12G",
         time="00:20:00",
     script:
-        "workflow/evaluation/eval-com-detect-score.py"
+        "../scripts/eval_com_detect_score.py"
 
 
 rule concatenate_results_multipartition:
@@ -208,7 +208,7 @@ rule concatenate_results_multipartition:
         mem="4G",
         time="00:50:00",
     script:
-        "workflow/evaluation/concatenate_results.py"
+        "../scripts/concatenate_results.py"
 
 
 #
@@ -241,7 +241,7 @@ rule plot_performance_vs_mixing:
         mem="4G",
         time="00:50:00",
     script:
-        "workflow/plot/plot-mixing-vs-performance.py"
+        "../scripts/plot_mixing_vs_performance.py"
 
 
 rule plot_performance_vs_mixing_all:
@@ -250,4 +250,4 @@ rule plot_performance_vs_mixing_all:
     output:
         output_file=FIG_PERFORMANCE_VS_MIXING_ALL.format(data="multi_partition_model"),
     run:
-        shell("pdfjam {input} --nup 3x4 --suffix 3up --outfile {output}")
+        shell("python workflow/scripts/pdf_nup.py {input} --nup 3x4 --outfile {output}")
